@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace threshold.Processes
+namespace threshold.Layers.Application
 {
     public class Process
     {
