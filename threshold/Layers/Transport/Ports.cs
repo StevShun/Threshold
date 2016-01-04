@@ -8,47 +8,57 @@ using System.Net.NetworkInformation;
 
 namespace threshold.Layers.Transport
 {
-    class Ports
+    public class Ports
     {
         public int[] AllListeningPorts;
         public int[] TcpListeningPorts;
         public int[] UdpListeningPorts;
 
         public Ports() {
-
-        } 
-
-        private static IPGlobalProperties IpGlobalProperties = 
-            IPGlobalProperties.GetIPGlobalProperties();
-
-        public IPEndPoint[] GetActiveTcpListeners()
-        {
-            return IpGlobalProperties.GetActiveTcpListeners();
+            AllListeningPorts = GetAllListeningPorts();
+            TcpListeningPorts = GetTcpListeningPorts();
+            UdpListeningPorts = GetUdpListeningPorts();
         }
 
-        private IPEndPoint[] GetActiveUdpListeners()
+        private Layers.Network.IpEndPoints IpEndPoints = 
+            new Layers.Network.IpEndPoints();
+
+        private int[] GetIpEndPointsPorts(IPEndPoint[] IpEndPoints)
         {
-            return IpGlobalProperties.GetActiveUdpListeners();
+            List<int> ports = new List<int>();
+
+            foreach (IPEndPoint iep in IpEndPoints)
+            {
+                ports.Add(iep.Port);
+            }
+
+            return ports.ToArray();
         }
 
-        private List<IPEndPoint> GetAllActiveListeners()
+        private int[] GetTcpListeningPorts()
         {
-            var allActiveListeners = new List<IPEndPoint>();
-            allActiveListeners.AddRange(GetActiveTcpListeners());
-            allActiveListeners.AddRange(GetActiveUdpListeners());
+            int[] tcpListeningPorts = 
+                GetIpEndPointsPorts(IpEndPoints.TcpListeningEndPoints);
 
-            return allActiveListeners;
+            return tcpListeningPorts;
         }
 
-
-
-
-        private string[] GetAllListeningPorts()
+        private int[] GetUdpListeningPorts()
         {
-            //foreach (IPEndPoint ipEndpoint in Get)
-            return null;
+            int[] udpListeningPorts =
+                GetIpEndPointsPorts(IpEndPoints.UdpListeningEndPoints);
+
+            return udpListeningPorts;
         }
 
+        private int[] GetAllListeningPorts()
+        {
+            List<int> allListeningPorts = new List<int>();
 
+            allListeningPorts.AddRange(GetTcpListeningPorts());
+            allListeningPorts.AddRange(GetUdpListeningPorts());
+
+            return allListeningPorts.ToArray();
+        }
     }
 }
