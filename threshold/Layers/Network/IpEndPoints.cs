@@ -10,6 +10,9 @@ namespace threshold.Layers.Network
 {
     class IpEndPoints
     {
+
+        // From Java, I would say that these should be private and not
+        // directly accessed which is being done in MainForm.cs
         public IPEndPoint[] AllListeningEndPoints;
         public IPEndPoint[] TcpListeningEndPoints;
         public IPEndPoint[] UdpListeningEndPoints;
