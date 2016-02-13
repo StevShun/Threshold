@@ -12,7 +12,7 @@ namespace threshold
 {
     public partial class MainForm : Form
     {
-        public Layers.Transport.Ports ports = new Layers.Transport.Ports();
+        public Network.Ports ports = new Network.Ports();
 
         public MainForm()
         {
@@ -21,9 +21,11 @@ namespace threshold
 
         private void getListeningPortsButton_Click(object sender, EventArgs e)
         {
-            int[] allListeningPorts = ports.AllListeningPorts;
-            string[] safeText =
-                Array.ConvertAll(allListeningPorts, element => element.ToString());
+            List<int> allListeningPorts = ports.GetAllListeningPorts();
+
+            List<string> safeText = 
+                allListeningPorts.ConvertAll<string>
+                (delegate(int i) {return i.ToString(); });
 
             consoleOutputTextBox.Clear();
 
