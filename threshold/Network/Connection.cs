@@ -5,21 +5,31 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Net;
+using threshold.Software;
 using threshold.Tools;
 
 namespace threshold.Network
 {
     public class Connection
     {
-        public string ExternalAddress { get; set; }
-        public string ExternalPort { get; set; }
-        public string LocalAddress { get; set; }
-        public string LocalPort { get; set; }
-        public string Process { get; set; }
-        public string Protocol { get; set; }
-        public string State { get; set; }
+        public Application Owner { get; private set; }
+        public int ExternalPort { get; private set; }
+        public int LocalPort { get; private set; }
+        public string ExternalAddress { get; private set; }
+        public string LocalAddress { get; private set; }
+        public string Protocol { get; private set; }
+        public string State { get; private set; }
 
-        private CommandLine commandLine = new CommandLine();
+        public Connection()
+        {
+            this.Owner = null;
+            this.ExternalPort = 0;
+            this.LocalPort = 0;
+            this.ExternalAddress = "Unknown";
+            this.LocalAddress = "Unknown";
+            this.Protocol = "Unknown";
+            this.State = "Unknown";
+        }
 
         public List<Connection> GetActiveConnections()
         {
@@ -29,38 +39,69 @@ namespace threshold.Network
         private List<Connection> GetActiveConnectionsUsingNetstat()
         {
             List<Connection> connections = new List<Connection>();
+            CommandLine commandLine = new CommandLine();
 
-            foreach (string s in commandLine.ExecuteNetstat("-ano"))
+            foreach (string line in commandLine.ExecuteNetstat("-ano"))
             {
-                Connection connection = new Connection();
-
-                List<string> subStrs = s.Split(new[] { ' ' },
+                List<string> subStrs = line.Split(new[] { ' ' },
                     StringSplitOptions.RemoveEmptyEntries).ToList();
 
                 // Substring sourced from: http://stackoverflow.com/a/25965143
-                connection.Protocol = subStrs[0];
+                string protocol = subStrs[0];
 
-                connection.LocalAddress = 
+                string localAddr = 
                     subStrs[1].Substring(0, subStrs[1].LastIndexOf(":"));
-                connection.LocalPort = 
-                    subStrs[1].Substring(subStrs[1].LastIndexOf(":")+1);
-
-                connection.ExternalAddress = 
+                string extAddr = 
                     subStrs[2].Substring(0, subStrs[2].LastIndexOf(":"));
-                connection.ExternalPort =
-                    subStrs[2].Substring(subStrs[2].LastIndexOf(":")+1);
 
-                // Hack for Netstat not giving us a state for UDP.
-                if (connection.Protocol == "UDP")
+                int localPort;
+                int extPort;
+                try 
                 {
-                    connection.State = "Unknown";
+                    localPort = Int32.Parse(subStrs[1].Substring
+                        (subStrs[1].LastIndexOf(":") + 1));
+                    extPort = Int32.Parse(subStrs[2].Substring
+                        (subStrs[2].LastIndexOf(":") + 1));
+                }
+                catch (FormatException e)
+                {
+                    localPort = 0;
+                    extPort = 0;
+                }
+
+                string state;
+                // Hack for Netstat not giving us a state for UDP.
+                if (protocol == "UDP")
+                {
+                    state = "Unknown";
                 }
                 else
                 {
-                    connection.State = subStrs[3];
+                    state = subStrs[3];
                 }
 
-                connection.Process = subStrs[subStrs.Count - 1];
+                int pid;
+                try
+                {
+                    pid = Int32.Parse(subStrs[subStrs.Count - 1]);
+                }
+                catch (FormatException e)
+                {
+                    pid = 0;
+                }
+                
+                Application application = new Application(pid);
+
+                Connection connection = new Connection
+                {
+                    ExternalAddress = extAddr,
+                    ExternalPort = extPort,
+                    LocalAddress = localAddr,
+                    LocalPort = localPort,
+                    Owner = application,
+                    Protocol = protocol,
+                    State = state,
+                };
 
                 connections.Add(connection);
             }
