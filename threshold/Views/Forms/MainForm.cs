@@ -7,31 +7,36 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using threshold.Network;
 
 namespace threshold
 {
     public partial class MainForm : Form
     {
-        public Network.Ports ports = new Network.Ports();
+        public Connection connection = new Connection();
 
         public MainForm()
         {
             InitializeComponent();
         }
 
-        private void getListeningPortsButton_Click(object sender, EventArgs e)
+        private void getActiveConnectionsButton_Click(object sender, EventArgs e)
         {
-            List<int> allListeningPorts = ports.GetAllListeningPorts();
-
-            List<string> safeText = 
-                allListeningPorts.ConvertAll<string>
-                (delegate(int i) {return i.ToString(); });
-
             consoleOutputTextBox.Clear();
 
-            foreach (string s in safeText)
+            foreach (Connection conn in connection.GetActiveConnections())
             {
-                consoleOutputTextBox.AppendText(s + Environment.NewLine);
+                consoleOutputTextBox.AppendText(
+                    " Local Address: " + conn.LocalAddress +
+                    " Local Port: " + conn.LocalPort +
+                    " External Address: " + conn.ExternalAddress +
+                    " External Port: " + conn.ExternalPort +
+                    " Proto: " + conn.Protocol +
+                    " Process: " + conn.Process +
+                    " State: " + conn.State +
+                    Environment.NewLine +
+                    " #########################################################"
+                    + Environment.NewLine);
             }
         }
     }
