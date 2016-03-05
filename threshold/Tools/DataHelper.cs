@@ -26,5 +26,20 @@ namespace threshold.Tools
 
             return list;
         }
+
+        public int ToInt(string str)
+        {
+            int newInt;
+            try
+            {
+                newInt = Int32.Parse(str);
+            }
+            catch
+            {
+                newInt = 0;
+            }
+
+            return newInt;
+        }
     }
 }

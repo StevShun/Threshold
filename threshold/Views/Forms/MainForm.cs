@@ -22,9 +22,14 @@ namespace threshold
 
         private void getActiveConnectionsButton_Click(object sender, EventArgs e)
         {
-            consoleOutputTextBox.Clear();
+            List<Connection> conns = connection.GetActiveConnections();
 
-            foreach (Connection conn in connection.GetActiveConnections())
+            consoleOutputTextBox.Clear();
+            consoleOutputTextBox.AppendText("Number of connections: " 
+                + conns.Count
+                + Environment.NewLine);
+
+            foreach (Connection conn in conns)
             {
                 consoleOutputTextBox.AppendText(
                     " Local Address: " + conn.LocalAddress +
@@ -32,7 +37,7 @@ namespace threshold
                     " External Address: " + conn.ExternalAddress +
                     " External Port: " + conn.ExternalPort.ToString() +
                     " Proto: " + conn.Protocol +
-                    " Process: " + conn.Owner.Name +
+                    " Process: " + conn.OwnerPid.ToString() +
                     " State: " + conn.State +
                     Environment.NewLine +
                     " #########################################################"

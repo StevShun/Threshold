@@ -29,12 +29,12 @@ namespace threshold.Tools
             return dataHelper.ToList(output);
         }
 
-        public List<string> ExecuteNetstat(string arguments)
-        {
-            List<string> netstatOutput = ExecuteCommand("netstat", arguments);
-            netstatOutput.RemoveRange(0, 4);
-
-            return netstatOutput;
-        }
+        //public List<string> ExecuteNetstat(string arguments)
+        //{
+        //    List<string> netstatOutput = ExecuteCommand("netstat", arguments);
+        //    netstatOutput.RemoveRange(0, 4);
+        //
+        //    return netstatOutput;
+        //}
     }
 }
