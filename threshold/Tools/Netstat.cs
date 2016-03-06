@@ -139,7 +139,7 @@ namespace threshold.Tools
 
             private string GetState()
             {
-                if (this.SubStrings.Length >= 4)
+                if (this.SubStrings.Length.Equals(5))
                 {
                     return this.SubStrings[3];
                 }

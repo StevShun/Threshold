@@ -10,38 +10,65 @@ namespace threshold.Software
     public class Application
     {
         public int Pid { get; private set; }
+        public Process Process { get; private set; }
         public string ExecutablePath { get; private set; }
         public string Name { get; private set; }
 
         public Application(int pid)
         {
+            this.Pid = pid;
+            this.Process = GetProcess();
+            this.ExecutablePath = GetExecutablePath();
+            this.Name = GetName();
+        }
+
+        public Process GetProcess()
+        {
             Process process;
             try
             {
-                process = Process.GetProcessById(pid);
+                process = Process.GetProcessById(this.Pid);
             }
             catch (ArgumentException e)
             {
-                return;
+                process = null;
             }
             catch (InvalidOperationException e)
             {
-                return;
+                process = null;
             }
 
+            return process;
+        }
+
+        public string GetExecutablePath()
+        {
             string execPath;
             try
             {
-                execPath = process.MainModule.FileName;
+                execPath = this.Process.MainModule.FileName;
             }
             catch
             {
-                execPath = null;
+                execPath = "";
             }
 
-            this.Pid = pid;
-            this.ExecutablePath = execPath;
-            this.Name = process.ProcessName;
+            return execPath;
+        }
+
+        public string GetName()
+        {
+            string name;
+            try
+            {
+                name = this.Process.ProcessName;
+            }
+            catch
+            {
+                name = "";
+            }
+
+            return name;
         }
     }
 }
