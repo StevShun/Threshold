@@ -8,11 +8,9 @@ using System.Diagnostics;
 
 namespace threshold.Tools
 {
-    public class CommandLine
+    public static class CommandLine
     {
-        private DataHelper dataHelper = new DataHelper();
-
-        public List<string> ExecuteCommand(string command, string arguments)
+        public static List<string> ExecuteCommand(string command, string arguments)
         {
             // CLI code example sourced from: http://stackoverflow.com/a/206366
             Process process = new Process();
@@ -26,15 +24,7 @@ namespace threshold.Tools
             string output = process.StandardOutput.ReadToEnd();
             process.WaitForExit();
 
-            return dataHelper.ToList(output);
+            return DataHelper.ToList(output);
         }
-
-        //public List<string> ExecuteNetstat(string arguments)
-        //{
-        //    List<string> netstatOutput = ExecuteCommand("netstat", arguments);
-        //    netstatOutput.RemoveRange(0, 4);
-        //
-        //    return netstatOutput;
-        //}
     }
 }

@@ -7,13 +7,14 @@ using System.IO;
 
 namespace threshold.Tools
 {
-    public class DataHelper
+    public static class DataHelper
     {
-        public List<string> ToList(string multiline)
+        public static List<string> ToList(string multiline)
         {
             var list = new List<string>();
 
-            // StringReader code example sourced from: http://stackoverflow.com/a/1500257
+            // StringReader code example sourced from:
+            // http://stackoverflow.com/a/1500257
             using (StringReader strReader = new StringReader(multiline))
             {
                 string line;
@@ -27,19 +28,19 @@ namespace threshold.Tools
             return list;
         }
 
-        public int ToInt(string str)
+        public static int ToInt(string str)
         {
             int newInt;
-            try
-            {
-                newInt = Int32.Parse(str);
-            }
-            catch
-            {
-                newInt = 0;
-            }
+            bool conversionResult = int.TryParse(str, out newInt);
 
-            return newInt;
+            if (conversionResult == true)
+            {
+                return newInt;
+            }
+            else
+            {
+                return 0;
+            }
         }
     }
 }

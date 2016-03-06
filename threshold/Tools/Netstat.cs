@@ -4,32 +4,33 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
+using System.Collections.Concurrent;
 
 namespace threshold.Tools
 {
     public class Netstat
     {
         public List<Line> Output { get; private set; }
-        private DataHelper dataHelper = new DataHelper();
 
         public Netstat()
         {
             List<string> rawOutput = Execute();
             rawOutput.RemoveRange(0, 4);
-            this.Output = new List<Line>();
+            var tmpBag = new ConcurrentBag<Line>();
 
-            foreach (string line in rawOutput)
+            Parallel.ForEach(rawOutput, (line) =>
             {
                 Line netstatLine = new Line(line);
-                Output.Add(netstatLine);
-            }
+                tmpBag.Add(netstatLine);
+            });
+
+            this.Output = new List<Line>();
+            this.Output.AddRange(tmpBag);
         }
 
         public List<string> Execute()
         {
-            CommandLine commandLine = new CommandLine();
-
-            return commandLine.ExecuteCommand("netstat", "-ano");
+            return CommandLine.ExecuteCommand("netstat", "-ano");
         }
 
         public class Line
@@ -41,27 +42,28 @@ namespace threshold.Tools
             public string LocalAddress { get; private set; }
             public string Proto { get; private set; }
             public string State { get; private set; }
-            private DataHelper dataHelper = new DataHelper();
+            private string[] SubStrings { get; set; }
 
             public Line(string netstatLine)
             {
-                string[] lineSubStrings = netstatLine.Split(new[] { ' ' },
+                this.SubStrings = netstatLine.Split(new[] { ' ' },
                     StringSplitOptions.RemoveEmptyEntries).ToArray();
 
-                this.Pid = GetPid(lineSubStrings);
-                this.ForeignPort = GetForeignPort(lineSubStrings);
-                this.LocalPort = GetLocalPort(lineSubStrings);
-                this.ForeignAddress = GetForeignAddress(lineSubStrings);
-                this.LocalAddress = GetLocalAddress(lineSubStrings);
-                this.Proto = GetProto(lineSubStrings);
-                this.State = GetState(lineSubStrings);
+                this.Pid = GetPid();
+                this.ForeignPort = GetForeignPort();
+                this.LocalPort = GetLocalPort();
+                this.ForeignAddress = GetForeignAddress();
+                this.LocalAddress = GetLocalAddress();
+                this.Proto = GetProto();
+                this.State = GetState();
             }
 
-            private int GetPid(string[] subStrings)
+            private int GetPid()
             {
-                if (subStrings.Length > 0)
+                if (this.SubStrings.Length > 0)
                 {
-                    return dataHelper.ToInt(subStrings[subStrings.Length - 1]);
+                    return DataHelper.ToInt(
+                        this.SubStrings[this.SubStrings.Length - 1]);
                 }
                 else
                 {
@@ -69,12 +71,13 @@ namespace threshold.Tools
                 }
             }
 
-            private int GetForeignPort(string[] subStrings)
+            private int GetForeignPort()
             {
-                if (subStrings.Length >= 3)
+                if (this.SubStrings.Length >= 3)
                 {
-                    return dataHelper.ToInt(subStrings[2].Substring
-                        (subStrings[2].LastIndexOf(":") + 1));
+                    return DataHelper.ToInt(
+                        this.SubStrings[2].Substring(
+                        this.SubStrings[2].LastIndexOf(":") + 1));
                 }
                 else
                 {
@@ -82,12 +85,13 @@ namespace threshold.Tools
                 }
             }
 
-            private int GetLocalPort(string[] subStrings)
+            private int GetLocalPort()
             {
-                if (subStrings.Length >= 2)
+                if (this.SubStrings.Length >= 2)
                 {
-                    return dataHelper.ToInt(subStrings[1].Substring
-                        (subStrings[1].LastIndexOf(":") + 1));
+                    return DataHelper.ToInt(
+                        this.SubStrings[1].Substring(
+                        this.SubStrings[1].LastIndexOf(":") + 1));
                 }
                 else
                 {
@@ -95,11 +99,12 @@ namespace threshold.Tools
                 }
             }
 
-            private string GetForeignAddress(string[] subStrings)
+            private string GetForeignAddress()
             {
-                if (subStrings.Length >= 3)
+                if (this.SubStrings.Length >= 3)
                 {
-                    return subStrings[2].Substring(0, subStrings[2].LastIndexOf(":"));
+                    return this.SubStrings[2].Substring(
+                        0, this.SubStrings[2].LastIndexOf(":"));
                 }
                 else
                 {
@@ -107,11 +112,12 @@ namespace threshold.Tools
                 }
             }
 
-            private string GetLocalAddress(string[] subStrings)
+            private string GetLocalAddress()
             {
-                if (subStrings.Length >= 2)
+                if (this.SubStrings.Length >= 2)
                 {
-                    return subStrings[1].Substring(0, subStrings[1].LastIndexOf(":"));
+                    return this.SubStrings[1].Substring(
+                        0, this.SubStrings[1].LastIndexOf(":"));
                 }
                 else
                 {
@@ -119,11 +125,11 @@ namespace threshold.Tools
                 }
             }
 
-            private string GetProto(string[] subStrings)
+            private string GetProto()
             {
-                if (subStrings.Length > 0)
+                if (this.SubStrings.Length > 0)
                 {
-                    return subStrings[0];
+                    return this.SubStrings[0];
                 }
                 else
                 {
@@ -131,11 +137,11 @@ namespace threshold.Tools
                 }
             }
 
-            private string GetState(string[] subStrings)
+            private string GetState()
             {
-                if (subStrings.Length >= 4)
+                if (this.SubStrings.Length >= 4)
                 {
-                    return subStrings[3];
+                    return this.SubStrings[3];
                 }
                 else
                 {
