@@ -12,7 +12,7 @@ namespace threshold.Network
 {
     public class Connection
     {
-        public int OwnerPid { get; private set; }
+        public Application Owner { get; private set; }
         public int ExternalPort { get; private set; }
         public int LocalPort { get; private set; }
         public string ExternalAddress { get; private set; }
@@ -22,7 +22,7 @@ namespace threshold.Network
 
         public Connection()
         {
-            this.OwnerPid = 0;
+            this.Owner = null;
             this.ExternalPort = 0;
             this.LocalPort = 0;
             this.ExternalAddress = "Unknown";
@@ -49,7 +49,7 @@ namespace threshold.Network
                     ExternalPort = line.ForeignPort,
                     LocalAddress = line.LocalAddress,
                     LocalPort = line.LocalPort,
-                    OwnerPid = line.Pid,
+                    Owner = new Application(line.Pid),
                     Protocol = line.Proto,
                     State = line.State,
                 };

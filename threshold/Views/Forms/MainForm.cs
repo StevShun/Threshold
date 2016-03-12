@@ -32,15 +32,15 @@ namespace threshold
             foreach (Connection conn in conns)
             {
                 consoleOutputTextBox.AppendText(
-                    " Local Address: " + conn.LocalAddress +
-                    " Local Port: " + conn.LocalPort.ToString() +
-                    " External Address: " + conn.ExternalAddress +
-                    " External Port: " + conn.ExternalPort.ToString() +
-                    " Proto: " + conn.Protocol +
-                    " Process: " + conn.OwnerPid.ToString() +
-                    " State: " + conn.State +
-                    Environment.NewLine +
-                    " #########################################################"
+                    " Local Address: " + conn.LocalAddress
+                    + " | Local Port: " + conn.LocalPort.ToString()
+                    + " | External Address: " + conn.ExternalAddress
+                    + " | External Port: " + conn.ExternalPort.ToString()
+                    + " | Proto: " + conn.Protocol
+                    + " | Process: " + conn.Owner.Hash
+                    + " | State: " + conn.State
+                    + Environment.NewLine
+                    + "#########################################################"
                     + Environment.NewLine);
             }
         }

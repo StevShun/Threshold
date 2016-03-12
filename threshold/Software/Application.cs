@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using threshold.Tools;
 
 namespace threshold.Software
 {
@@ -12,6 +13,7 @@ namespace threshold.Software
         public int Pid { get; private set; }
         public Process Process { get; private set; }
         public string ExecutablePath { get; private set; }
+        public string Hash { get; private set; }
         public string Name { get; private set; }
 
         public Application(int pid)
@@ -19,6 +21,7 @@ namespace threshold.Software
             this.Pid = pid;
             this.Process = GetProcess();
             this.ExecutablePath = GetExecutablePath();
+            this.Hash = GetHash();
             this.Name = GetName();
         }
 
@@ -29,11 +32,7 @@ namespace threshold.Software
             {
                 process = Process.GetProcessById(this.Pid);
             }
-            catch (ArgumentException e)
-            {
-                process = null;
-            }
-            catch (InvalidOperationException e)
+            catch
             {
                 process = null;
             }
@@ -69,6 +68,11 @@ namespace threshold.Software
             }
 
             return name;
+        }
+
+        public string GetHash()
+        {
+            return Data.GetMd5Hash(this.ExecutablePath);
         }
     }
 }

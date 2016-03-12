@@ -10,7 +10,9 @@ namespace threshold.Tools
 {
     public static class CommandLine
     {
-        public static List<string> ExecuteCommand(string command, string arguments)
+        public static List<string> ExecuteCommandWithArgs(
+            string command,
+            string arguments)
         {
             // CLI code example sourced from: http://stackoverflow.com/a/206366
             Process process = new Process();
@@ -20,11 +22,19 @@ namespace threshold.Tools
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardOutput = true;
 
-            process.Start();
-            string output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
+            string output;
+            try
+            {
+                process.Start();
+                output = process.StandardOutput.ReadToEnd();
+                process.WaitForExit();
+            }
+            catch
+            {
+                return Data.ToList("");
+            }
 
-            return DataHelper.ToList(output);
+            return Data.ToList(output);
         }
     }
 }

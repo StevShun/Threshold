@@ -30,7 +30,7 @@ namespace threshold.Tools
 
         public List<string> Execute()
         {
-            return CommandLine.ExecuteCommand("netstat", "-ano");
+            return CommandLine.ExecuteCommandWithArgs("netstat", "-ano");
         }
 
         public class Line
@@ -62,7 +62,7 @@ namespace threshold.Tools
             {
                 if (this.SubStrings.Length > 0)
                 {
-                    return DataHelper.ToInt(
+                    return Data.ToInt(
                         this.SubStrings[this.SubStrings.Length - 1]);
                 }
                 else
@@ -75,7 +75,7 @@ namespace threshold.Tools
             {
                 if (this.SubStrings.Length >= 3)
                 {
-                    return DataHelper.ToInt(
+                    return Data.ToInt(
                         this.SubStrings[2].Substring(
                         this.SubStrings[2].LastIndexOf(":") + 1));
                 }
@@ -89,7 +89,7 @@ namespace threshold.Tools
             {
                 if (this.SubStrings.Length >= 2)
                 {
-                    return DataHelper.ToInt(
+                    return Data.ToInt(
                         this.SubStrings[1].Substring(
                         this.SubStrings[1].LastIndexOf(":") + 1));
                 }
