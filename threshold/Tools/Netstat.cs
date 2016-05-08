@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Drawing;
 using System.Collections.Concurrent;
 
 namespace threshold.Tools
@@ -24,8 +22,8 @@ namespace threshold.Tools
                 tmpBag.Add(netstatLine);
             });
 
-            this.Output = new List<Line>();
-            this.Output.AddRange(tmpBag);
+            Output = new List<Line>();
+            Output.AddRange(tmpBag);
         }
 
         public List<string> Execute()
@@ -46,24 +44,23 @@ namespace threshold.Tools
 
             public Line(string netstatLine)
             {
-                this.SubStrings = netstatLine.Split(new[] { ' ' },
+                SubStrings = netstatLine.Split(new[] { ' ' },
                     StringSplitOptions.RemoveEmptyEntries).ToArray();
 
-                this.Pid = GetPid();
-                this.ForeignPort = GetForeignPort();
-                this.LocalPort = GetLocalPort();
-                this.ForeignAddress = GetForeignAddress();
-                this.LocalAddress = GetLocalAddress();
-                this.Proto = GetProto();
-                this.State = GetState();
+                Pid = GetPid();
+                ForeignPort = GetForeignPort();
+                LocalPort = GetLocalPort();
+                ForeignAddress = GetForeignAddress();
+                LocalAddress = GetLocalAddress();
+                Proto = GetProto();
+                State = GetState();
             }
 
             private int GetPid()
             {
-                if (this.SubStrings.Length > 0)
+                if (SubStrings.Length > 0)
                 {
-                    return Data.ToInt(
-                        this.SubStrings[this.SubStrings.Length - 1]);
+                    return Data.ToInt(SubStrings[SubStrings.Length - 1]);
                 }
                 else
                 {
@@ -73,11 +70,10 @@ namespace threshold.Tools
 
             private int GetForeignPort()
             {
-                if (this.SubStrings.Length >= 3)
+                if (SubStrings.Length >= 3)
                 {
-                    return Data.ToInt(
-                        this.SubStrings[2].Substring(
-                        this.SubStrings[2].LastIndexOf(":") + 1));
+                    return Data.ToInt(SubStrings[2].Substring(
+                        SubStrings[2].LastIndexOf(":") + 1));
                 }
                 else
                 {
@@ -87,11 +83,10 @@ namespace threshold.Tools
 
             private int GetLocalPort()
             {
-                if (this.SubStrings.Length >= 2)
+                if (SubStrings.Length >= 2)
                 {
-                    return Data.ToInt(
-                        this.SubStrings[1].Substring(
-                        this.SubStrings[1].LastIndexOf(":") + 1));
+                    return Data.ToInt(SubStrings[1].Substring(
+                        SubStrings[1].LastIndexOf(":") + 1));
                 }
                 else
                 {
@@ -101,10 +96,10 @@ namespace threshold.Tools
 
             private string GetForeignAddress()
             {
-                if (this.SubStrings.Length >= 3)
+                if (SubStrings.Length >= 3)
                 {
-                    return this.SubStrings[2].Substring(
-                        0, this.SubStrings[2].LastIndexOf(":"));
+                    return SubStrings[2].Substring(0,
+                        SubStrings[2].LastIndexOf(":"));
                 }
                 else
                 {
@@ -114,10 +109,10 @@ namespace threshold.Tools
 
             private string GetLocalAddress()
             {
-                if (this.SubStrings.Length >= 2)
+                if (SubStrings.Length >= 2)
                 {
-                    return this.SubStrings[1].Substring(
-                        0, this.SubStrings[1].LastIndexOf(":"));
+                    return SubStrings[1].Substring(0,
+                        SubStrings[1].LastIndexOf(":"));
                 }
                 else
                 {
@@ -127,9 +122,9 @@ namespace threshold.Tools
 
             private string GetProto()
             {
-                if (this.SubStrings.Length > 0)
+                if (SubStrings.Length > 0)
                 {
-                    return this.SubStrings[0];
+                    return SubStrings[0];
                 }
                 else
                 {
@@ -139,9 +134,9 @@ namespace threshold.Tools
 
             private string GetState()
             {
-                if (this.SubStrings.Length.Equals(5))
+                if (SubStrings.Length.Equals(5))
                 {
-                    return this.SubStrings[3];
+                    return SubStrings[3];
                 }
                 else
                 {

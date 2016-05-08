@@ -1,11 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using threshold.Network;
 
@@ -37,7 +31,7 @@ namespace threshold
                     + " | External Address: " + conn.ExternalAddress
                     + " | External Port: " + conn.ExternalPort.ToString()
                     + " | Proto: " + conn.Protocol
-                    + " | Process: " + conn.Owner.Hash
+                    + " | Process: " + conn.OwnerPid
                     + " | State: " + conn.State
                     + Environment.NewLine
                     + "#########################################################"

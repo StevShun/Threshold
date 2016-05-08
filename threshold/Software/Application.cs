@@ -1,31 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using threshold.Tools;
 
 namespace threshold.Software
 {
     public class Application
     {
+        public bool IsSystemOwned { get; private set; }
         public int Pid { get; private set; }
-        public Process Process { get; private set; }
+        public Process WindowsProcess { get; private set; }
         public string ExecutablePath { get; private set; }
         public string Hash { get; private set; }
         public string Name { get; private set; }
 
         public Application(int pid)
         {
-            this.Pid = pid;
-            this.Process = GetProcess();
-            this.ExecutablePath = GetExecutablePath();
-            this.Hash = GetHash();
-            this.Name = GetName();
+            IsSystemOwned = false;
+            Pid = pid;
+            WindowsProcess = GetWindowsProcess();
+            if (WindowsProcess != null && Pid != 0)
+            {
+                ExecutablePath = GetExecutablePath();
+                Hash = GetHash();
+                Name = GetName();
+            }
+            else
+            {
+                ExecutablePath = "";
+                Hash = "";
+                Name = "";
+            }
         }
 
-        public Process GetProcess()
+        public Process GetWindowsProcess()
         {
             Process process;
             try
@@ -45,10 +51,11 @@ namespace threshold.Software
             string execPath;
             try
             {
-                execPath = this.Process.MainModule.FileName;
+                execPath = WindowsProcess.MainModule.FileName;
             }
             catch
             {
+                Trace.WriteLine("GetExecutablePath catch for " + Pid);
                 execPath = "";
             }
 
@@ -60,10 +67,11 @@ namespace threshold.Software
             string name;
             try
             {
-                name = this.Process.ProcessName;
+                name = WindowsProcess.ProcessName;
             }
             catch
             {
+                Trace.WriteLine("GetName catch for " + Pid);
                 name = "";
             }
 
@@ -72,7 +80,7 @@ namespace threshold.Software
 
         public string GetHash()
         {
-            return Data.GetMd5Hash(this.ExecutablePath);
+            return Data.GetMd5Hash(ExecutablePath);
         }
     }
 }

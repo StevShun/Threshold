@@ -1,18 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Net;
-using threshold.Software;
+﻿using System.Collections.Generic;
 using threshold.Tools;
 
 namespace threshold.Network
 {
     public class Connection
     {
-        public Application Owner { get; private set; }
+        public int OwnerPid { get; private set; }
         public int ExternalPort { get; private set; }
         public int LocalPort { get; private set; }
         public string ExternalAddress { get; private set; }
@@ -22,13 +15,13 @@ namespace threshold.Network
 
         public Connection()
         {
-            this.Owner = null;
-            this.ExternalPort = 0;
-            this.LocalPort = 0;
-            this.ExternalAddress = "Unknown";
-            this.LocalAddress = "Unknown";
-            this.Protocol = "Unknown";
-            this.State = "Unknown";
+            OwnerPid = 0;
+            ExternalPort = 0;
+            LocalPort = 0;
+            ExternalAddress = "Unknown";
+            LocalAddress = "Unknown";
+            Protocol = "Unknown";
+            State = "Unknown";
         }
 
         public List<Connection> GetActiveConnections()
@@ -49,7 +42,7 @@ namespace threshold.Network
                     ExternalPort = line.ForeignPort,
                     LocalAddress = line.LocalAddress,
                     LocalPort = line.LocalPort,
-                    Owner = new Application(line.Pid),
+                    OwnerPid = line.Pid,
                     Protocol = line.Proto,
                     State = line.State,
                 };
