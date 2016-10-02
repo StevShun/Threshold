@@ -2,54 +2,68 @@
 using System.Collections.Specialized;
 using System.Net;
 using System.Text;
+using Newtonsoft.Json.Linq;
+using threshold.Tools;
 
 namespace threshold.Apis.VirusTotal.Requests
 {
     public abstract class BaseRequest : IRequest
     {
-        public bool ReceivedResponseFromServer { get; set; }
-        public Exception RuntimeException
-        {
-            get
-            {
-                if (RuntimeException != null)
-                {
-                    return RuntimeException;
-                } else
-                {
-                    return new Exception("Dummy exception.");
-                }
-            }
+        public bool ReceivedResponseFromServer { get; set; } = false;
 
-            set
-            {
-                RuntimeException = value;
-            }
-        }
+        public JObject ServerResponse { get; set; } = new JObject { };
+
         protected readonly string BaseUrl = "http://www.virustotal.com";
+
         protected abstract string GetUri();
+
         protected abstract string GetHttpMethod();
+
         protected abstract NameValueCollection Contents { get; set; }
 
-        public string GetServerResponse()
+        public void ExecuteSynchronously()
         {
-            ReceivedResponseFromServer = true;
+            JObject jObject = new JObject { };
             string url = BaseUrl + "/" + GetUri();
             WebClient webClient = new WebClient();
-            string info = "";
 
             try
             {
                 byte[] responseBytes = webClient.UploadValues(url, GetHttpMethod(), Contents);
-                info = Encoding.UTF8.GetString(responseBytes);
+                string info = Encoding.UTF8.GetString(responseBytes);
+                jObject = JObject.Parse(info);
+                ReceivedResponseFromServer = true;
             }
-            catch (Exception e)
+            catch (Exception e) when (e is ArgumentNullException || e is WebException)
             {
-                ReceivedResponseFromServer = false;
-                RuntimeException = e;
+                System.Diagnostics.Debug.WriteLine(e);
             }
 
-            return info;
+            ServerResponse = jObject;
         }
+
+        public int GetResponseCode()
+        {
+            string value = GetValueFromMessage("response_code", ServerResponse);
+            return Data.ToInt(value);
+        }
+
+        protected string GetValueFromMessage(string key, JObject message)
+        {
+            string value = "";
+            JToken jToken = null;
+
+            if (key != null && message != null && message.TryGetValue(key, out jToken))
+            {
+                if (jToken != null)
+                {
+                    value = jToken.ToString();
+                }
+            }
+
+            return value;
+        }
+
+        public abstract string GetResult();
     }
 }

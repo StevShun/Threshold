@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 
 namespace threshold.Apis.VirusTotal.Requests
 {
@@ -22,6 +21,11 @@ namespace threshold.Apis.VirusTotal.Requests
         protected override string GetHttpMethod()
         {
             return "POST";
+        }
+
+        public override string GetResult()
+        {
+            return GetValueFromMessage("positives", ServerResponse);
         }
     }
 }

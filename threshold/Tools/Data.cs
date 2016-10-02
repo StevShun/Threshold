@@ -19,7 +19,7 @@ namespace threshold.Tools
             }
             else
             {
-                return 0;
+                return -999;
             }
         }
 

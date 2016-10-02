@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json.Linq;
 
 namespace threshold.Apis.VirusTotal.Requests
 {
@@ -6,8 +7,12 @@ namespace threshold.Apis.VirusTotal.Requests
     {
         bool ReceivedResponseFromServer { get; set; }
 
-        Exception RuntimeException { get; set; }
+        JObject ServerResponse { get; set; }
 
-        string GetServerResponse();
+        void ExecuteSynchronously();
+
+        int GetResponseCode();
+
+        string GetResult();
     }
 }
