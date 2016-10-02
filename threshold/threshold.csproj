@@ -68,7 +68,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Apis\VirusTotal\Requests\VirusTotalScanRequest.cs" />
+    <Compile Include="Apis\VirusTotal\Requests\BaseRequest.cs" />
+    <Compile Include="Apis\VirusTotal\Requests\IRequest.cs" />
+    <Compile Include="Apis\VirusTotal\Requests\HashReportRequest.cs" />
     <Compile Include="Layers\SystemApplication.cs" />
     <Compile Include="Layers\Connection.cs" />
     <Compile Include="Tools\CommandLine.cs" />

@@ -2,40 +2,43 @@
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using threshold.Apis.VirusTotal.Requests;
+using Newtonsoft.Json.Linq;
 
 namespace threshold.Apis.VirusTotal
 {
     public class VirusTotalApi
     {
-        private readonly string BaseUrl = "http://www.virustotal.com";
-        private readonly string RescanUri = "vtapi/v2/file/report";
         private readonly string ApiKey = Properties.Settings.Default.VirusTotalApiKey;
 
         public bool IsFileEvil(string md5Hash)
         {
             bool evil = false;
+            string info = RequestHashInfo(md5Hash);
+            JObject json = JObject.Parse(info);
+            JToken jToken = null;
+            if (json.TryGetValue("positives", out jToken))
+            {
+                if (jToken != null)
+                {
+                }
+            }
 
             return evil;
         }
 
         public string RequestHashInfo(string md5Hash)
         {
-            string url = BaseUrl + "/" + RescanUri;
-            VirusTotalScanRequest virusTotalScanRequest = new VirusTotalScanRequest(ApiKey, md5Hash);
-            WebClient webClient = new WebClient();
-            string info = "";
+            HashReportRequest hashReportRequest = new HashReportRequest(ApiKey, md5Hash);
+            string result = hashReportRequest.GetServerResponse();
 
-            try
+            if (!hashReportRequest.ReceivedResponseFromServer)
             {
-                byte[] responseBytes = webClient.UploadValues(url, "POST", virusTotalScanRequest.Contents);
-                info = Encoding.UTF8.GetString(responseBytes);
-            } catch (Exception e)
-            {
-                System.Diagnostics.Debug.WriteLine(e);
+                System.Diagnostics.Debug.WriteLine(hashReportRequest.RuntimeException);
             }
 
-            return info;
-        } 
+            return result;
+        }
     }
 }
