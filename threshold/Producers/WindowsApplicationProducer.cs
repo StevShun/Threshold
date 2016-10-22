@@ -2,9 +2,10 @@
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
-using threshold.Producers.Connections;
+using threshold.Applications;
+using threshold.Connections;
 
-namespace threshold.Producers.Applications
+namespace threshold.Producers
 {
     public class WindowsApplicationProducer : BaseProducer<IApplication>
     {

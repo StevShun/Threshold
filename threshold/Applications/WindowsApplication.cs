@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using threshold.Tools;
 
-namespace threshold.Producers.Applications
+namespace threshold.Applications
 {
     public class WindowsApplication : IApplication
     {

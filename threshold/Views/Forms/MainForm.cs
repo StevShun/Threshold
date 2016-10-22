@@ -4,8 +4,8 @@ using System.Windows.Forms;
 using threshold.Views.Forms;
 using threshold.Apis.VirusTotal;
 using threshold.Producers;
-using threshold.Producers.Applications;
-using threshold.Producers.Connections;
+using threshold.Applications;
+using threshold.Connections;
 
 namespace threshold
 {

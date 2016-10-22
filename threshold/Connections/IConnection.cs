@@ -1,4 +1,4 @@
-﻿namespace threshold.Producers.Connections
+﻿namespace threshold.Connections
 {
     public interface IConnection
     {

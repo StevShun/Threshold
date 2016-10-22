@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
-using threshold.Producers.Connections;
+using threshold.Connections;
 
 namespace threshold.Tools
 {

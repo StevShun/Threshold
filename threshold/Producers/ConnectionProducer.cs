@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel;
 using System.Threading;
+using threshold.Connections;
 using threshold.Tools;
 
-namespace threshold.Producers.Connections
+namespace threshold.Producers
 {
     public class ConnectionProducer : BaseProducer<IConnection>
     {
@@ -34,7 +35,7 @@ namespace threshold.Producers.Connections
             {
                 lock (Lock)
                 {
-                    foreach (Connection connection in netstat.GetConnections())
+                    foreach (IConnection connection in netstat.GetConnections())
                     {
                         Data[connection.OwnerPid.ToString()] = connection;
                     }

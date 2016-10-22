@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Management;
 
-namespace threshold.Producers.Connections
+namespace threshold.Connections
 {
     public class Connection : IConnection
     {

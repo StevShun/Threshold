@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace threshold.Producers.Applications
+namespace threshold.Applications
 {
     public interface IApplication
     {
