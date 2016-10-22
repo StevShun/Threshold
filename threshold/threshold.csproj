@@ -84,7 +84,7 @@
     <Compile Include="Producers\IProducer.cs" />
     <Compile Include="Producers\Applications\WindowsApplicationProducer.cs" />
     <Compile Include="Tools\CommandLine.cs" />
-    <Compile Include="Tools\Data.cs" />
+    <Compile Include="Tools\DataHelper.cs" />
     <Compile Include="Tools\Netstat.cs" />
     <Compile Include="Views\Forms\MainForm.cs">
       <SubType>Form</SubType>
