@@ -38,9 +38,8 @@ namespace threshold.Producers.Applications
             while (!BackgroundThread.CancellationPending)
             {
                 ConcurrentDictionary<string, IApplication> applications = new ConcurrentDictionary<string, IApplication>();
-                Dictionary<string, IConnection> connections = new Dictionary<string, IConnection>(ConnectionProducer.GetData());
 
-                Parallel.ForEach(connections, (connection) =>
+                Parallel.ForEach(ConnectionProducer.GetData(), (connection) =>
                 {
                     IApplication windowsApp = new WindowsApplication(connection.Value.OwnerPid);
                     applications.GetOrAdd(windowsApp.Md5Hash, windowsApp);
@@ -51,7 +50,6 @@ namespace threshold.Producers.Applications
                     foreach (IApplication application in applications.Values)
                     {
                         Data[application.Md5Hash] = application;
-                        System.Diagnostics.Debug.WriteLine("Added " + application.Md5Hash);
                     }
                 }
 
