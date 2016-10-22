@@ -24,12 +24,12 @@ namespace threshold.Apis.VirusTotal
             hashReportRequest.ExecuteSynchronously();
             string result = hashReportRequest.GetResult();
 
-            if (!hashReportRequest.ReceivedResponseFromServer)
-            {
-                System.Diagnostics.Debug.WriteLine("Request failed.");
-            } else
+            if (hashReportRequest.ReceivedResponseFromServer)
             {
                 System.Diagnostics.Debug.WriteLine(hashReportRequest.GetResponseCode());
+            } else
+            {
+                System.Diagnostics.Debug.WriteLine("Request failed.");
             }
 
             return result;
