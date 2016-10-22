@@ -63,7 +63,7 @@ namespace threshold.Tools
                 {
                     if (LineSubStrings != null && LineSubStrings.Length > 0)
                     {
-                        return Data.ToInt(LineSubStrings[LineSubStrings.Length - 1]);
+                        return DataHelper.ToInt(LineSubStrings[LineSubStrings.Length - 1]);
                     }
                     else
                     {
@@ -78,7 +78,7 @@ namespace threshold.Tools
                 {
                     if (LineSubStrings != null && LineSubStrings.Length >= 3)
                     {
-                        return Data.ToInt(LineSubStrings[2].Substring(
+                        return DataHelper.ToInt(LineSubStrings[2].Substring(
                             LineSubStrings[2].LastIndexOf(":") + 1));
                     }
                     else
@@ -94,7 +94,7 @@ namespace threshold.Tools
                 {
                     if (LineSubStrings != null && LineSubStrings.Length >= 2)
                     {
-                        return Data.ToInt(LineSubStrings[1].Substring(
+                        return DataHelper.ToInt(LineSubStrings[1].Substring(
                             LineSubStrings[1].LastIndexOf(":") + 1));
                     }
                     else

@@ -67,7 +67,7 @@ namespace threshold.Producers.Applications
         {
             get
             {
-                return Data.GetMd5Hash(ExecutablePath);
+                return DataHelper.GetMd5Hash(ExecutablePath);
             }
         }
 

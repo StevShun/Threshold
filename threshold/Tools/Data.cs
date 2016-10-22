@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 
 namespace threshold.Tools
 {
-    public static class Data
+    public static class DataHelper
     {
         public static int ToInt(string str)
         {

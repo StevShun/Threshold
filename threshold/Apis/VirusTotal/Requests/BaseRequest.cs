@@ -45,7 +45,7 @@ namespace threshold.Apis.VirusTotal.Requests
         public int GetResponseCode()
         {
             string value = GetValueFromMessage("response_code", ServerResponse);
-            return Data.ToInt(value);
+            return DataHelper.ToInt(value);
         }
 
         protected string GetValueFromMessage(string key, JObject message)
