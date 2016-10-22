@@ -81,7 +81,6 @@
     <Compile Include="Producers\Connections\Connection.cs" />
     <Compile Include="Producers\BaseProducer.cs" />
     <Compile Include="Producers\Connections\ConnectionProducer.cs" />
-    <Compile Include="Producers\PrimaryProducer.cs" />
     <Compile Include="Producers\IProducer.cs" />
     <Compile Include="Producers\Applications\WindowsApplicationProducer.cs" />
     <Compile Include="Tools\CommandLine.cs" />
