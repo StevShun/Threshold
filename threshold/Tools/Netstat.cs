@@ -3,144 +3,166 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using threshold.Producers.Connections;
 
 namespace threshold.Tools
 {
     public class Netstat
     {
-        public List<Line> Output { get; private set; }
-
         public Netstat()
         {
-            List<string> rawOutput = Execute();
+        }
+
+        public ConcurrentBag<IConnection> GetConnections()
+        {
+            ConcurrentBag<IConnection> connections = new ConcurrentBag<IConnection>();
+            CommandLine commandLine = new CommandLine();
+            List<string> rawOutput = commandLine.ExecuteCommandWithArguments("netstat", "-ano");
+            // Remove the header that Netstat adds to its output.
             rawOutput.RemoveRange(0, 4);
-            var tmpBag = new ConcurrentBag<Line>();
 
             Parallel.ForEach(rawOutput, (line) =>
             {
                 Line netstatLine = new Line(line);
-                tmpBag.Add(netstatLine);
+                Connection connection = new Connection
+                {
+                    ExternalAddress = netstatLine.ForeignAddress,
+                    ExternalPort = netstatLine.ForeignPort,
+                    LocalAddress = netstatLine.LocalAddress,
+                    LocalPort = netstatLine.LocalPort,
+                    OwnerPid = netstatLine.Pid,
+                    Protocol = netstatLine.Proto,
+                    State = netstatLine.State
+                };
+                connections.Add(connection);
             });
 
-            Output = new List<Line>();
-            Output.AddRange(tmpBag);
+            return connections;
         }
 
-        public List<string> Execute()
+        public ConcurrentBag<IConnection> GetUniqueConnections()
         {
-            return CommandLine.ExecuteCommandWithArgs("netstat", "-ano");
+            ConcurrentBag<IConnection> connections = GetConnections();
+
+            return new ConcurrentBag<IConnection>(connections.GroupBy(x => x.OwnerPid).Select(x => x.First()));
         }
 
-        public class Line
+        class Line
         {
-            public int Pid { get; private set; }
-            public int ForeignPort { get; private set; }
-            public int LocalPort { get; private set; }
-            public string ForeignAddress { get; private set; }
-            public string LocalAddress { get; private set; }
-            public string Proto { get; private set; }
-            public string State { get; private set; }
-            private string[] SubStrings { get; set; }
+            private string[] LineSubStrings;
 
             public Line(string netstatLine)
             {
-                SubStrings = netstatLine.Split(new[] { ' ' },
+                LineSubStrings = netstatLine.Split(new[] { ' ' },
                     StringSplitOptions.RemoveEmptyEntries).ToArray();
-
-                Pid = GetPid();
-                ForeignPort = GetForeignPort();
-                LocalPort = GetLocalPort();
-                ForeignAddress = GetForeignAddress();
-                LocalAddress = GetLocalAddress();
-                Proto = GetProto();
-                State = GetState();
             }
 
-            private int GetPid()
+            public int Pid
             {
-                if (SubStrings.Length > 0)
+                get
                 {
-                    return Data.ToInt(SubStrings[SubStrings.Length - 1]);
-                }
-                else
-                {
-                    return 0;
+                    if (LineSubStrings != null && LineSubStrings.Length > 0)
+                    {
+                        return Data.ToInt(LineSubStrings[LineSubStrings.Length - 1]);
+                    }
+                    else
+                    {
+                        return 0;
+                    }
                 }
             }
 
-            private int GetForeignPort()
+            public int ForeignPort
             {
-                if (SubStrings.Length >= 3)
+                get
                 {
-                    return Data.ToInt(SubStrings[2].Substring(
-                        SubStrings[2].LastIndexOf(":") + 1));
-                }
-                else
-                {
-                    return 0;
+                    if (LineSubStrings != null && LineSubStrings.Length >= 3)
+                    {
+                        return Data.ToInt(LineSubStrings[2].Substring(
+                            LineSubStrings[2].LastIndexOf(":") + 1));
+                    }
+                    else
+                    {
+                        return 0;
+                    }
                 }
             }
 
-            private int GetLocalPort()
+            public int LocalPort
             {
-                if (SubStrings.Length >= 2)
+                get
                 {
-                    return Data.ToInt(SubStrings[1].Substring(
-                        SubStrings[1].LastIndexOf(":") + 1));
-                }
-                else
-                {
-                    return 0;
+                    if (LineSubStrings != null && LineSubStrings.Length >= 2)
+                    {
+                        return Data.ToInt(LineSubStrings[1].Substring(
+                            LineSubStrings[1].LastIndexOf(":") + 1));
+                    }
+                    else
+                    {
+                        return 0;
+                    }
                 }
             }
 
-            private string GetForeignAddress()
+            public string ForeignAddress
             {
-                if (SubStrings.Length >= 3)
+                get
                 {
-                    return SubStrings[2].Substring(0,
-                        SubStrings[2].LastIndexOf(":"));
-                }
-                else
-                {
-                    return "Unknown";
+                    if (LineSubStrings != null && LineSubStrings.Length >= 3)
+                    {
+                        return LineSubStrings[2].Substring(0,
+                            LineSubStrings[2].LastIndexOf(":"));
+                    }
+                    else
+                    {
+                        return "Unknown";
+                    }
                 }
             }
 
-            private string GetLocalAddress()
+            public string LocalAddress
             {
-                if (SubStrings.Length >= 2)
+                get
                 {
-                    return SubStrings[1].Substring(0,
-                        SubStrings[1].LastIndexOf(":"));
-                }
-                else
-                {
-                    return "Unknown";
+                    if (LineSubStrings != null && LineSubStrings.Length >= 2)
+                    {
+                        return LineSubStrings[1].Substring(0,
+                            LineSubStrings[1].LastIndexOf(":"));
+                    }
+                    else
+                    {
+                        return "Unknown";
+                    }
                 }
             }
 
-            private string GetProto()
+            public string Proto
             {
-                if (SubStrings.Length > 0)
+                get
                 {
-                    return SubStrings[0];
-                }
-                else
-                {
-                    return "Unknown";
+                    if (LineSubStrings != null && LineSubStrings.Length > 0)
+                    {
+                        return LineSubStrings[0];
+                    }
+                    else
+                    {
+                        return "Unknown";
+                    }
                 }
             }
 
-            private string GetState()
+            public string State
             {
-                if (SubStrings.Length.Equals(5))
+                get
                 {
-                    return SubStrings[3];
-                }
-                else
-                {
-                    return "Unknown";
+                    if (LineSubStrings != null && LineSubStrings.Length.Equals(5))
+                    {
+                        return LineSubStrings[3];
+                    }
+                    else
+                    {
+                        return "Unknown";
+                    }
                 }
             }
         }

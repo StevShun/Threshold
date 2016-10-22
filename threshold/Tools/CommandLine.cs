@@ -3,11 +3,14 @@ using System.Diagnostics;
 
 namespace threshold.Tools
 {
-    public static class CommandLine
+    public class CommandLine
     {
-        public static List<string> ExecuteCommandWithArgs(
-            string command,
-            string arguments)
+        public CommandLine()
+        {
+
+        }
+
+        public List<string> ExecuteCommandWithArguments(string command, string arguments)
         {
             // CLI code example sourced from: http://stackoverflow.com/a/206366
             Process process = new Process();
@@ -26,7 +29,7 @@ namespace threshold.Tools
             }
             catch
             {
-                return Data.ToList("");
+                output = "";
             }
 
             return Data.ToList(output);

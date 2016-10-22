@@ -2,18 +2,24 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 using threshold.Views.Forms;
-using threshold.Layers;
 using threshold.Apis.VirusTotal;
+using threshold.Producers;
+using threshold.Producers.Applications;
+using threshold.Producers.Connections;
 
 namespace threshold
 {
     public partial class MainForm : Form
     {
-        public Connection connection = new Connection();
+        private IProducer<IConnection> ConnectionProducer { get; set; }
+        private IProducer<IApplication> ApplicationProducer { get; set; }
 
         public MainForm()
         {
             InitializeComponent();
+            ConnectionProducer = new ConnectionProducer();
+            ApplicationProducer = new WindowsApplicationProducer(ConnectionProducer);
+            ApplicationProducer.Start();
         }
 
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -25,17 +31,22 @@ namespace threshold
         private void getActiveConnectionsButton_Click(object sender, EventArgs e)
         {
             consoleOutputTextBox.Clear();
-            List<Connection> connections = connection.GetActiveConnections();
+            /*
+            List<IConnection> connections = new List<IConnection>();
+            connections.AddRange(ConnectionProducer.GetData());
             consoleOutputTextBox.AppendText(getActiveConnectionsText(connections));
+            */
+            Dictionary<string, IApplication> applications = ApplicationProducer.GetData();
+            consoleOutputTextBox.AppendText(getActiveWindowsApplicationsText(applications));
         }
 
-        private string getActiveConnectionsText(List<Connection> connections)
+        private string getActiveConnectionsText(Dictionary<string, IConnection> connections)
         {
             string activeConnectionsContent = "";
 
-            foreach (Connection conn in connections)
+            foreach (Connection conn in connections.Values)
             {
-                SystemApplication application = new SystemApplication(conn.OwnerPid);
+                IApplication application = new WindowsApplication(conn.OwnerPid);
                 activeConnectionsContent = activeConnectionsContent
                     + "Connection info:"
                     + Environment.NewLine
@@ -51,13 +62,34 @@ namespace threshold
                     + Environment.NewLine
                     + "Name: " + application.Name
                     + " | Location: " + application.ExecutablePath
-                    + " | Hash: " + application.Hash
+                    + " | Hash: " + application.Md5Hash
                     + Environment.NewLine
                     + "#########################################################"
                     + Environment.NewLine;
             }
 
             return activeConnectionsContent;
+        }
+
+        private string getActiveWindowsApplicationsText(Dictionary<string, IApplication> applications)
+        {
+            string applicationsText = "";
+
+            foreach (IApplication app in applications.Values)
+            {
+                applicationsText = applicationsText
+                    + "Aoo info:"
+                    + Environment.NewLine
+                    + "PID: " + app.Pid
+                    + " | Name: " + app.Name
+                    + " | Executable path: " + app.ExecutablePath
+                    + " | MD5 Hash: " + app.Md5Hash
+                    + Environment.NewLine
+                    + "#########################################################"
+                    + Environment.NewLine;
+            }
+
+            return applicationsText;
         }
 
         private void checkHashButton_Click(object sender, EventArgs e)

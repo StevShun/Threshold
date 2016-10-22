@@ -51,6 +51,9 @@
     <CodeAnalysisRuleSet>ManagedMinimumRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -58,6 +61,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -71,8 +75,15 @@
     <Compile Include="Apis\VirusTotal\Requests\BaseRequest.cs" />
     <Compile Include="Apis\VirusTotal\Requests\IRequest.cs" />
     <Compile Include="Apis\VirusTotal\Requests\HashReportRequest.cs" />
-    <Compile Include="Layers\SystemApplication.cs" />
-    <Compile Include="Layers\Connection.cs" />
+    <Compile Include="Producers\Applications\IApplication.cs" />
+    <Compile Include="Producers\Connections\IConnection.cs" />
+    <Compile Include="Producers\Applications\WindowsApplication.cs" />
+    <Compile Include="Producers\Connections\Connection.cs" />
+    <Compile Include="Producers\BaseProducer.cs" />
+    <Compile Include="Producers\Connections\ConnectionProducer.cs" />
+    <Compile Include="Producers\PrimaryProducer.cs" />
+    <Compile Include="Producers\IProducer.cs" />
+    <Compile Include="Producers\Applications\WindowsApplicationProducer.cs" />
     <Compile Include="Tools\CommandLine.cs" />
     <Compile Include="Tools\Data.cs" />
     <Compile Include="Tools\Netstat.cs" />
@@ -106,6 +117,9 @@
     <EmbeddedResource Include="Views\Forms\SettingsForm.resx">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="app.manifest">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
