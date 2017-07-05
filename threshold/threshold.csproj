@@ -55,6 +55,9 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -73,17 +76,33 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Apis\VirusTotal\Requests\BaseRequest.cs" />
+    <Compile Include="Apis\VirusTotal\Requests\MultiHashRequest.cs" />
     <Compile Include="Apis\VirusTotal\Requests\IRequest.cs" />
-    <Compile Include="Apis\VirusTotal\Requests\HashReportRequest.cs" />
-    <Compile Include="Consumers\BaseConsumer.cs" />
-    <Compile Include="Consumers\IConsumer.cs" />
+    <Compile Include="Apis\VirusTotal\Requests\RequestFactory.cs" />
     <Compile Include="Applications\IApplication.cs" />
     <Compile Include="Connections\IConnection.cs" />
     <Compile Include="Applications\WindowsApplication.cs" />
     <Compile Include="Connections\Connection.cs" />
+    <Compile Include="Events\Actions\ActionType.cs" />
+    <Compile Include="Events\Actions\AddListenerAction.cs" />
+    <Compile Include="Events\Actions\IAction.cs" />
+    <Compile Include="Events\Actions\OfferEventAction.cs" />
+    <Compile Include="Events\Actions\RemoveListenerAction.cs" />
+    <Compile Include="Events\Conduit\DefaultEventConduit.cs" />
+    <Compile Include="Events\Conduit\IEventConduit.cs" />
+    <Compile Include="Events\Conduit\IEventListener.cs" />
+    <Compile Include="Events\Types\EventType.cs" />
+    <Compile Include="Events\Types\ExecutedMultiHashRequestEvent.cs" />
+    <Compile Include="Events\Types\IEvent.cs" />
+    <Compile Include="Events\Types\ConnectionEvent.cs" />
+    <Compile Include="Events\Types\MultiHashRequestEvent.cs" />
+    <Compile Include="Events\Types\WindowsApplicationEvent.cs" />
     <Compile Include="Producers\BaseProducer.cs" />
     <Compile Include="Producers\ConnectionProducer.cs" />
     <Compile Include="Producers\IProducer.cs" />
+    <Compile Include="Producers\MultiHashRequestProducer.cs" />
+    <Compile Include="Producers\ExecutedHashRequestProducer.cs" />
+    <Compile Include="Producers\ProducerController.cs" />
     <Compile Include="Producers\WindowsApplicationProducer.cs" />
     <Compile Include="Tools\CommandLine.cs" />
     <Compile Include="Tools\DataHelper.cs" />
@@ -96,7 +115,6 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Apis\VirusTotal\VirusTotalApi.cs" />
     <Compile Include="Views\Forms\SettingsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -120,6 +138,9 @@
     </EmbeddedResource>
     <None Include="app.manifest">
       <SubType>Designer</SubType>
+    </None>
+    <None Include="log4net.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using threshold.Connections;
 
 namespace threshold.Applications
 {
@@ -8,7 +9,7 @@ namespace threshold.Applications
 
         int Pid { get; }
 
-        Process RunningProcess { get; }
+        IConnection Connection { get; }
 
         string ExecutablePath { get; }
 

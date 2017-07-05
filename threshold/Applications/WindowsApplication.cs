@@ -1,44 +1,38 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
+﻿using threshold.Connections;
 using threshold.Tools;
 
 namespace threshold.Applications
 {
     public class WindowsApplication : IApplication
     {
-        public WindowsApplication(int pid)
+        private bool _IsSystemOwned;
+        private IConnection _Connection;
+        private string _ExecutablePath;
+        private string _Md5Hash;
+        private string _Name;
+
+        public WindowsApplication(IConnection connection)
         {
-            Pid = pid;
+            _Connection = connection;
+            Pid = connection.OwnerPid;
+            _ExecutablePath = connection.OwnerExecutablePath;
         }
 
         public bool IsSystemOwned
         {
             get
             {
-                return false;
+                return _IsSystemOwned;
             }
         }
 
         public int Pid { get; private set; }
 
-        public Process RunningProcess
+        public IConnection Connection
         {
             get
             {
-                Process process = null;
-                if (Pid > 0)
-                {
-                    try
-                    {
-                        process = Process.GetProcessById(Pid);
-                    }
-                    catch
-                    {
-                        // TODO: Actually do something.
-                    }
-                }
-
-                return process;
+                return _Connection;
             }
         }
 
@@ -46,20 +40,7 @@ namespace threshold.Applications
         {
             get
             {
-                string execPath = "";
-                if (RunningProcess != null)
-                {
-                    try
-                    {
-                        execPath = RunningProcess.MainModule.FileName;
-                    }
-                    catch (Win32Exception e)
-                    {
-                        Debug.WriteLine("GetExecutablePath catch for PID " + Pid + " " + e);
-                    }
-                }
-
-                return execPath;
+                return _ExecutablePath;
             }
         }
 
@@ -67,7 +48,17 @@ namespace threshold.Applications
         {
             get
             {
-                return DataHelper.GetMd5Hash(ExecutablePath);
+                string md5hash = "";
+                if (_Md5Hash != null)
+                {
+                    md5hash = _Md5Hash;
+                }
+                else
+                {
+                    md5hash = DataHelper.GetMd5Hash(ExecutablePath);
+                    _Md5Hash = md5hash;
+                }
+                return md5hash;
             }
         }
 
@@ -75,20 +66,7 @@ namespace threshold.Applications
         {
             get
             {
-                string name = "";
-                if (RunningProcess != null)
-                {
-                    try
-                    {
-                        name = RunningProcess.ProcessName;
-                    }
-                    catch
-                    {
-                        Debug.WriteLine("GetName catch for " + Pid);
-                    }
-                }
-
-                return name;
+                return _ExecutablePath;
             }
         }
     }

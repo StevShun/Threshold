@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 using threshold.Views.Forms;
-using threshold.Apis.VirusTotal;
-using threshold.Producers;
 using threshold.Applications;
 using threshold.Connections;
 
@@ -11,15 +9,9 @@ namespace threshold
 {
     public partial class MainForm : Form
     {
-        private IProducer<IConnection> ConnectionProducer { get; set; }
-        private IProducer<IApplication> ApplicationProducer { get; set; }
-
         public MainForm()
         {
             InitializeComponent();
-            ConnectionProducer = new ConnectionProducer();
-            ApplicationProducer = new WindowsApplicationProducer(ConnectionProducer);
-            ApplicationProducer.Start();
         }
 
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -31,13 +23,7 @@ namespace threshold
         private void getActiveConnectionsButton_Click(object sender, EventArgs e)
         {
             consoleOutputTextBox.Clear();
-            /*
-            List<IConnection> connections = new List<IConnection>();
-            connections.AddRange(ConnectionProducer.GetData());
-            consoleOutputTextBox.AppendText(getActiveConnectionsText(connections));
-            */
-            Dictionary<string, IApplication> applications = ApplicationProducer.GetData();
-            consoleOutputTextBox.AppendText(getActiveWindowsApplicationsText(applications));
+            consoleOutputTextBox.AppendText("");
         }
 
         private string getActiveConnectionsText(Dictionary<string, IConnection> connections)
@@ -46,7 +32,7 @@ namespace threshold
 
             foreach (Connection conn in connections.Values)
             {
-                IApplication application = new WindowsApplication(conn.OwnerPid);
+                IApplication application = new WindowsApplication(conn);
                 activeConnectionsContent = activeConnectionsContent
                     + "Connection info:"
                     + Environment.NewLine
@@ -94,10 +80,7 @@ namespace threshold
 
         private void checkHashButton_Click(object sender, EventArgs e)
         {
-            VirusTotalApi virusTotalApi = new VirusTotalApi();
-            string info = virusTotalApi.RequestHashInfo("35b3e3e8ab090db701c1766704dd624d");
-            consoleOutputTextBox.Clear();
-            consoleOutputTextBox.AppendText(info);
+            return;
         }
     }
 }

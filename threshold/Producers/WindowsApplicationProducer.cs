@@ -1,19 +1,24 @@
 ﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
-using System.Threading.Tasks;
 using threshold.Applications;
 using threshold.Connections;
+using threshold.Events.Conduit;
+using threshold.Events.Types;
 
 namespace threshold.Producers
 {
     public class WindowsApplicationProducer : BaseProducer<IApplication>
     {
-        private IProducer<IConnection> ConnectionProducer;
+        private IEventConduit EventConduit;
+        private ConcurrentBag<IConnection> Connections;
 
-        public WindowsApplicationProducer(IProducer<IConnection> connectionProducer)
+        public WindowsApplicationProducer(IEventConduit eventConduit)
         {
-            ConnectionProducer = connectionProducer;
+            EventConduit = eventConduit;
+            eventConduit.AddEventListener(this);
+            Connections = new ConcurrentBag<IConnection>();
         }
 
         public override string Name
@@ -24,40 +29,47 @@ namespace threshold.Producers
             }
         }
 
-        public override int ProduceInterval
+        public override int ProduceIntervalMillis
         {
             get
             {
-                return 2000;
+                return 1000;
             }
         }
 
         protected override void Produce(object sender, DoWorkEventArgs e)
         {
-            ConnectionProducer.Start();
             while (!BackgroundThread.CancellationPending)
             {
-                ConcurrentDictionary<string, IApplication> applications = new ConcurrentDictionary<string, IApplication>();
-
-                Parallel.ForEach(ConnectionProducer.GetData(), (connection) =>
+                foreach(IConnection connection in Connections)
                 {
-                    IApplication windowsApp = new WindowsApplication(connection.Value.OwnerPid);
-                    applications.GetOrAdd(windowsApp.Md5Hash, windowsApp);
-                });
-
-                lock (Lock)
-                {
-                    foreach (IApplication application in applications.Values)
-                    {
-                        Data[application.Md5Hash] = application;
-                    }
+                    WindowsApplication windowsApplication = new WindowsApplication(connection);
+                    WindowsApplicationEvent windowsApplicationEvent = 
+                        new WindowsApplicationEvent(windowsApplication);
+                    EventConduit.SendEvent(windowsApplicationEvent);
                 }
-
-                System.Diagnostics.Debug.WriteLine("Added stuff for: " + Name);
-                Thread.Sleep(ConnectionProducer.IdealClientPollingInterval);
+                Thread.Sleep(ProduceIntervalMillis);
             }
-            ConnectionProducer.Stop();
             e.Cancel = true;
+        }
+
+        public override void OnEvent(IEvent _event)
+        {
+            EventType eventType = _event.GetEventType();
+            switch(eventType)
+            {
+                case EventType.Connection:
+                    ConnectionEvent connectionEvent = (ConnectionEvent)_event;
+                    Connections.Add(connectionEvent.Connection);
+                    break;
+            }
+        }
+
+        public override List<EventType> GetNotifyTypes()
+        {
+            List<EventType> eventTypes = new List<EventType>();
+            eventTypes.Add(EventType.Connection);
+            return eventTypes;
         }
     }
 }

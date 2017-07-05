@@ -6,13 +6,7 @@ namespace threshold.Producers
     {
         string Name { get; }
 
-        int ProduceInterval { get; }
-
-        int MaintenanceInterval { get; }
-
-        int IdealClientPollingInterval { get; }
-
-        Dictionary<string, T> GetData();
+        int ProduceIntervalMillis { get; }
 
         void Start();
 

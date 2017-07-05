@@ -1,69 +1,87 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
 using System.Text;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using threshold.Tools;
+using threshold.Applications;
 
 namespace threshold.Apis.VirusTotal.Requests
 {
     public abstract class BaseRequest : IRequest
     {
+        protected readonly string BaseUrl = "http://www.virustotal.com";
+
         public bool ReceivedResponseFromServer { get; set; } = false;
 
-        public JObject ServerResponse { get; set; } = new JObject { };
+        protected string RawServerResponse { get; set; } = "";
 
-        protected readonly string BaseUrl = "http://www.virustotal.com";
+        protected NameValueCollection Contents { get; set; } = new NameValueCollection();
 
         protected abstract string GetUri();
 
         protected abstract string GetHttpMethod();
 
-        protected abstract NameValueCollection Contents { get; set; }
-
         public void ExecuteSynchronously()
         {
-            JObject jObject = new JObject { };
             string url = BaseUrl + "/" + GetUri();
             WebClient webClient = new WebClient();
 
             try
             {
                 byte[] responseBytes = webClient.UploadValues(url, GetHttpMethod(), Contents);
-                string info = Encoding.UTF8.GetString(responseBytes);
-                jObject = JObject.Parse(info);
                 ReceivedResponseFromServer = true;
+                RawServerResponse = Encoding.UTF8.GetString(responseBytes);
             }
             catch (Exception e) when (e is ArgumentNullException || e is WebException)
             {
                 System.Diagnostics.Debug.WriteLine(e);
             }
-
-            ServerResponse = jObject;
         }
 
-        public int GetResponseCode()
-        {
-            string value = GetValueFromMessage("response_code", ServerResponse);
-            return DataHelper.ToInt(value);
-        }
+        public abstract string GetServerResponse();
 
-        protected string GetValueFromMessage(string key, JObject message)
-        {
-            string value = "";
-            JToken jToken = null;
+        public abstract Dictionary<IApplication, Dictionary<string, string>> GetResults();
 
-            if (key != null && message != null && message.TryGetValue(key, out jToken))
+        protected JArray GetResponseJsonArray()
+        {
+            JArray jsonArry = new JArray();
+
+            if (RawServerResponse != null)
             {
-                if (jToken != null)
+                try
                 {
-                    value = jToken.ToString();
+                    jsonArry = JArray.Parse(RawServerResponse);
+                }
+                catch (JsonReaderException e)
+                {
+                    System.Diagnostics.Debug.WriteLine(e);
                 }
             }
 
-            return value;
+            return jsonArry;
         }
 
-        public abstract string GetResult();
+        protected JObject GetResponseJsonObject()
+        {
+            JObject jsonObject = new JObject();
+
+            if (RawServerResponse != null)
+            {
+                try
+                {
+                    jsonObject = JObject.Parse(RawServerResponse);
+                }
+                catch (JsonReaderException e)
+                {
+                    System.Diagnostics.Debug.WriteLine(e);
+                }
+            }
+
+            return jsonObject;
+        }
+
+        public abstract void Build();
     }
 }

@@ -1,18 +1,18 @@
-﻿using System;
-using Newtonsoft.Json.Linq;
+﻿using System.Collections.Generic;
+using threshold.Applications;
 
 namespace threshold.Apis.VirusTotal.Requests
 {
-    interface IRequest
+    public interface IRequest
     {
         bool ReceivedResponseFromServer { get; set; }
 
-        JObject ServerResponse { get; set; }
+        Dictionary<IApplication, Dictionary<string, string>> GetResults();
+
+        string GetServerResponse();
 
         void ExecuteSynchronously();
 
-        int GetResponseCode();
-
-        string GetResult();
+        void Build();
     }
 }

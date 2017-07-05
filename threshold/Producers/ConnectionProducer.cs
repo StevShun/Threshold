@@ -1,15 +1,22 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading;
+using log4net;
 using threshold.Connections;
+using threshold.Events.Conduit;
+using threshold.Events.Types;
 using threshold.Tools;
 
 namespace threshold.Producers
 {
     public class ConnectionProducer : BaseProducer<IConnection>
     {
-        public ConnectionProducer()
-        {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ConnectionProducer));
+        private IEventConduit EventConduit;
 
+        public ConnectionProducer(IEventConduit eventConduit)
+        {
+            EventConduit = eventConduit;
         }
 
         public override string Name
@@ -20,7 +27,7 @@ namespace threshold.Producers
             }
         }
 
-        public override int ProduceInterval
+        public override int ProduceIntervalMillis
         {
             get
             {
@@ -33,17 +40,26 @@ namespace threshold.Producers
             Netstat netstat = new Netstat();
             while (!BackgroundThread.CancellationPending)
             {
-                lock (Lock)
+                foreach (IConnection connection in netstat.GetConnections())
                 {
-                    foreach (IConnection connection in netstat.GetConnections())
-                    {
-                        Data[connection.OwnerPid.ToString()] = connection;
-                    }
+                    string info = connection.OwnerExecutablePath + " PID: " + connection.OwnerPid;
+                    Log.Debug("New connection: " + info);
+                    ConnectionEvent connectionEvent = new ConnectionEvent(connection);
+                    EventConduit.SendEvent(connectionEvent);
                 }
-                System.Diagnostics.Debug.WriteLine("Added stuff for: " + Name);
-                Thread.Sleep(ProduceInterval);
+                Thread.Sleep(ProduceIntervalMillis);
             }
             e.Cancel = true;
+        }
+
+        public override void OnEvent(IEvent _event)
+        {
+            return;
+        }
+
+        public override List<EventType> GetNotifyTypes()
+        {
+            return new List<EventType>();
         }
     }
 }
