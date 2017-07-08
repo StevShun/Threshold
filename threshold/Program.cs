@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Windows.Forms;
 using log4net;
-using threshold.Apis.VirusTotal.Requests;
-using threshold.Applications;
 using threshold.Events.Conduit;
-using threshold.Connections;
 using threshold.Producers;
-using System.Threading;
 
 namespace threshold
 {
