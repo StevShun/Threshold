@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.Threading;
 using log4net;
 using threshold.Connections;
 using threshold.Events.Conduit;
@@ -31,7 +30,7 @@ namespace threshold.Producers
         {
             get
             {
-                return 1000;
+                return 0;
             }
         }
 
@@ -42,12 +41,18 @@ namespace threshold.Producers
             {
                 foreach (IConnection connection in netstat.GetConnections())
                 {
-                    string info = connection.OwnerExecutablePath + " PID: " + connection.OwnerPid;
-                    Log.Debug("New connection: " + info);
-                    ConnectionEvent connectionEvent = new ConnectionEvent(connection);
-                    EventConduit.SendEvent(connectionEvent);
+                    if (BackgroundThread.CancellationPending)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        // string info = connection.OwnerExecutablePath + " PID: " + connection.OwnerPid;
+                        // Log.Debug("New connection: " + info);
+                        ConnectionEvent connectionEvent = new ConnectionEvent(connection);
+                        EventConduit.SendEvent(connectionEvent);
+                    }
                 }
-                Thread.Sleep(ProduceIntervalMillis);
             }
             e.Cancel = true;
         }
