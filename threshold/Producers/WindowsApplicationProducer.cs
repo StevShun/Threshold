@@ -1,9 +1,8 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
+using log4net;
 using threshold.Applications;
-using threshold.Connections;
 using threshold.Events.Conduit;
 using threshold.Events.Types;
 
@@ -11,14 +10,13 @@ namespace threshold.Producers
 {
     public class WindowsApplicationProducer : BaseProducer<IApplication>
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(WindowsApplicationProducer));
         private IEventConduit EventConduit;
-        private ConcurrentBag<IConnection> Connections;
 
         public WindowsApplicationProducer(IEventConduit eventConduit)
         {
             EventConduit = eventConduit;
             eventConduit.AddEventListener(this);
-            Connections = new ConcurrentBag<IConnection>();
         }
 
         public override string Name
@@ -33,7 +31,7 @@ namespace threshold.Producers
         {
             get
             {
-                return 1000;
+                return 0;
             }
         }
 
@@ -41,14 +39,7 @@ namespace threshold.Producers
         {
             while (!BackgroundThread.CancellationPending)
             {
-                foreach(IConnection connection in Connections)
-                {
-                    WindowsApplication windowsApplication = new WindowsApplication(connection);
-                    WindowsApplicationEvent windowsApplicationEvent = 
-                        new WindowsApplicationEvent(windowsApplication);
-                    EventConduit.SendEvent(windowsApplicationEvent);
-                }
-                Thread.Sleep(ProduceIntervalMillis);
+                Thread.Sleep(500);
             }
             e.Cancel = true;
         }
@@ -60,7 +51,10 @@ namespace threshold.Producers
             {
                 case EventType.Connection:
                     ConnectionEvent connectionEvent = (ConnectionEvent)_event;
-                    Connections.Add(connectionEvent.Connection);
+                    IApplication application = new WindowsApplication(connectionEvent.Connection);
+                    string info = "App: " + application.Name + " Hash: " + application.Md5Hash;
+                    Log.Info(info);
+                    EventConduit.SendEvent(new WindowsApplicationEvent(application));
                     break;
             }
         }
