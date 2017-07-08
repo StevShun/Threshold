@@ -5,28 +5,37 @@ namespace threshold.Applications
 {
     public class WindowsApplication : IApplication
     {
-        private bool _IsSystemOwned;
         private IConnection _Connection;
-        private string _ExecutablePath;
         private string _Md5Hash;
         private string _Name;
 
         public WindowsApplication(IConnection connection)
         {
             _Connection = connection;
-            Pid = connection.OwnerPid;
-            _ExecutablePath = connection.OwnerExecutablePath;
         }
 
         public bool IsSystemOwned
         {
             get
             {
-                return _IsSystemOwned;
+                if ("".Equals(_Connection.OwnerExecutablePath))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 
-        public int Pid { get; private set; }
+        public int Pid
+        {
+            get
+            {
+                return _Connection.OwnerPid;
+            }
+        }
 
         public IConnection Connection
         {
@@ -40,7 +49,7 @@ namespace threshold.Applications
         {
             get
             {
-                return _ExecutablePath;
+                return _Connection.OwnerExecutablePath;
             }
         }
 
@@ -48,17 +57,11 @@ namespace threshold.Applications
         {
             get
             {
-                string md5hash = "";
-                if (_Md5Hash != null)
+                if (_Md5Hash == null)
                 {
-                    md5hash = _Md5Hash;
+                    _Md5Hash = DataHelper.GetMd5Hash(ExecutablePath);
                 }
-                else
-                {
-                    md5hash = DataHelper.GetMd5Hash(ExecutablePath);
-                    _Md5Hash = md5hash;
-                }
-                return md5hash;
+                return _Md5Hash;
             }
         }
 
@@ -66,7 +69,19 @@ namespace threshold.Applications
         {
             get
             {
-                return _ExecutablePath;
+                if (_Name == null)
+                {
+                    string executablePath = _Connection.OwnerExecutablePath;
+                    if ("".Equals(executablePath))
+                    {
+                        _Name = "Unknown";
+                    }
+                    else
+                    {
+                        _Name = executablePath.Substring(executablePath.LastIndexOf('\\') + 1);
+                    }
+                }
+                return _Name;
             }
         }
     }
