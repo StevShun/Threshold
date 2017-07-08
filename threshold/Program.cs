@@ -16,12 +16,12 @@ namespace threshold
             IEventConduit eventConduit = new DefaultEventConduit();
             eventConduit.Start();
             ProducerController producerController = new ProducerController(eventConduit);
-            producerController.StartConnectionProducer();
+            producerController.Start();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());
             eventConduit.Stop();
-            producerController.StopConnectionProducer();
+            producerController.Stop();
         }
     }
 }

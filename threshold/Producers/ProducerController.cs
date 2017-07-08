@@ -17,16 +17,19 @@ namespace threshold.Producers
         {
             EventConduit = eventConduit;
             ConnectionProducer = new ConnectionProducer(eventConduit);
+            ApplicationProducer = new WindowsApplicationProducer(eventConduit);
         }
 
-        public void StartConnectionProducer()
+        public void Start()
         {
             ConnectionProducer.Start();
+            ApplicationProducer.Start();
         }
 
-        public void StopConnectionProducer()
+        public void Stop()
         {
             ConnectionProducer.Stop();
+            ApplicationProducer.Stop();
         }
     }
 }
