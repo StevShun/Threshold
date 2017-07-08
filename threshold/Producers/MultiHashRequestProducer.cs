@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
+using log4net;
 using threshold.Applications;
 using threshold.Apis.VirusTotal.Requests;
 using threshold.Events.Conduit;
@@ -11,6 +12,7 @@ namespace threshold.Producers
 {
     public class MultiHashRequestProducer : BaseProducer<IRequest>
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(MultiHashRequestProducer));
         private IEventConduit EventConduit;
         private HashSet<string> SubmittedApplicationHashes;
         private ConcurrentQueue<IApplication> PendingApplications;
@@ -45,10 +47,24 @@ namespace threshold.Producers
             {
                 case EventType.WindowsApplication:
                     WindowsApplicationEvent windowsApplicationEvent = (WindowsApplicationEvent)_event;
-                    IApplication application = windowsApplicationEvent.Application;
-                    if (SubmittedApplicationHashes.Add(application.Md5Hash))
+                    string info = "'" + windowsApplicationEvent.Application.Name
+                        + "', PID '" + windowsApplicationEvent.Application.Pid + "', hash '"
+                        + windowsApplicationEvent.Application.Md5Hash + "'";
+                    Log.Info("Got application: " + info);
+                    if (windowsApplicationEvent.Application.IsSystemOwned)
                     {
+                        Log.Info("Application " + info + " will not be scanned because it is system owned");
+                    }
+                    // Use a HashSet to store submitted applications. This way,
+                    // redundant requests will not be produced.
+                    else if (SubmittedApplicationHashes.Add(windowsApplicationEvent.Application.Md5Hash))
+                    {
+                        Log.Info("Queued application: " + info);
                         PendingApplications.Enqueue(windowsApplicationEvent.Application);
+                    }
+                    else
+                    {
+                        Log.Info("Application " + info + " has already been enqueued");
                     }
                     break;
             }
@@ -60,28 +76,43 @@ namespace threshold.Producers
             {
                 if (!PendingApplications.IsEmpty)
                 {
-                    MultiHashRequest multiHashRequest =
-                        RequestFactory.GetMultiHashRequest();
+                    MultiHashRequest multiHashRequest = RequestFactory.GetMultiHashRequest();
 
                     foreach (var item in PendingApplications)
                     {
-                        IApplication application;
-                        if (PendingApplications.TryDequeue(out application))
+                        if (BackgroundThread.CancellationPending)
                         {
-                            if (!multiHashRequest.AddApplication(application))
+                            break;
+                        }
+                        else
+                        {
+                            IApplication application;
+                            if (PendingApplications.TryDequeue(out application))
                             {
-                                PendingApplications.Enqueue(application);
-                                break;
+                                if (!multiHashRequest.AddApplication(application))
+                                {
+                                    Log.Debug("Requeued application because the request is full: "
+                                        + application.Name);
+                                    // Requeue the application if the hash request is full.
+                                    PendingApplications.Enqueue(application);
+                                    break;
+                                }
                             }
                         }
                     }
 
-                    multiHashRequest.Build();
-
-                    MultiHashRequestEvent multiHashRequestEvent =
-                        new MultiHashRequestEvent(multiHashRequest);
-
-                    EventConduit.SendEvent(multiHashRequestEvent);
+                    if (BackgroundThread.CancellationPending)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Log.Info("Building multi hash request...");
+                        multiHashRequest.Build();
+                        IEvent multiHashRequestEvent = new MultiHashRequestEvent(multiHashRequest);
+                        EventConduit.SendEvent(multiHashRequestEvent);
+                        Thread.Sleep(1000);
+                    }
                 }
             }
             e.Cancel = true;
