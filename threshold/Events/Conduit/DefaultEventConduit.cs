@@ -5,23 +5,23 @@ using System.ComponentModel;
 using log4net;
 using threshold.Events.Actions;
 using threshold.Events.Types;
+using System.Threading;
 
 namespace threshold.Events.Conduit
 {
     class DefaultEventConduit : IEventConduit
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(DefaultEventConduit));
-        private bool IsWorkerThreadRunning;
         private BlockingCollection<IAction> Actions;
         private Dictionary<EventType, List<WeakReference<IEventListener>>> EventTypesToListeners;
-        private BackgroundWorker Worker;
+        private BackgroundWorker _BackgroundWorker;
         private List<IEventListener> RemoveItems;
 
         public DefaultEventConduit()
         {
             Actions = new BlockingCollection<IAction>();
             EventTypesToListeners = new Dictionary<EventType, List<WeakReference<IEventListener>>>();
-            Worker = new BackgroundWorker
+            _BackgroundWorker = new BackgroundWorker
             {
                 WorkerReportsProgress = true,
                 WorkerSupportsCancellation = true
@@ -43,7 +43,7 @@ namespace threshold.Events.Conduit
         public void SendEvent(IEvent _event)
         {
             EventType eventType = _event.GetEventType();
-            if (IsWorkerThreadRunning)
+            if (_BackgroundWorker.IsBusy)
             {
                 Log.Debug("Sending event: " + eventType.ToString());
                 Actions.Add(new OfferEventAction(_event));
@@ -58,22 +58,41 @@ namespace threshold.Events.Conduit
         public void Start()
         {
             Log.Info("Starting Event Conduit thread...");
-            IsWorkerThreadRunning = true;
-            Worker.DoWork += ProcessEvents;
-            Worker.RunWorkerAsync();
+            _BackgroundWorker.DoWork += ProcessEvents;
+            _BackgroundWorker.RunWorkerAsync();
         }
 
         public void Stop()
         {
+            _BackgroundWorker.CancelAsync();
             Log.Info("Stopping Event Conduit thread...");
-            IsWorkerThreadRunning = false;
-            Worker.CancelAsync();
+            bool isCleanStop = false;
+            for (int i = 0; i < 10; i++)
+            {
+                if (_BackgroundWorker.IsBusy)
+                {
+                    Thread.Sleep(1000);
+                }
+                else
+                {
+                    isCleanStop = true;
+                    break;
+                }
+            }
+            if (isCleanStop)
+            {
+                Log.Debug("Stopped event conduit");
+            }
+            else
+            {
+                Log.Error("Failed to stop event conduit");
+            }
         }
 
         private void ProcessEvents(object sender, DoWorkEventArgs e)
         {
             RemoveItems = new List<IEventListener>();
-            while (IsWorkerThreadRunning)
+            while (!_BackgroundWorker.CancellationPending)
             {
                 IAction action = Actions.Take();
                 switch (action.GetActionType())
@@ -92,6 +111,7 @@ namespace threshold.Events.Conduit
                         break;
                 }
             }
+            e.Cancel = true;
         }
 
         private void ProcessOfferEventAction(OfferEventAction offerEventAction)

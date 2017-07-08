@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading;
+using log4net;
 using threshold.Events.Conduit;
 using threshold.Events.Types;
 
@@ -7,6 +9,8 @@ namespace threshold.Producers
 {
     public abstract class BaseProducer<T> : IProducer<T>, IEventListener
     {
+        private static readonly ILog Log = LogManager.GetLogger(typeof(BaseProducer<T>));
+
         protected BackgroundWorker BackgroundThread = new BackgroundWorker
         {
             WorkerReportsProgress = true,
@@ -21,13 +25,34 @@ namespace threshold.Producers
         {
             BackgroundThread.DoWork += Produce;
             BackgroundThread.RunWorkerAsync();
-            System.Diagnostics.Debug.WriteLine("Start called for: " + Name);
+            Log.Debug("Start called for: " + Name);
         }
 
         public void Stop()
         {
+            Log.Info("Stopping " + Name + "...");
             BackgroundThread.CancelAsync();
-            System.Diagnostics.Debug.WriteLine("Stop called for: " + Name);
+            bool isCleanStop = false;
+            for (int i = 0; i < 10; i++)
+            {
+                if (BackgroundThread.IsBusy)
+                {
+                    Thread.Sleep(1000);
+                }
+                else
+                {
+                    isCleanStop = true;
+                    break;
+                }
+            }
+            if (isCleanStop)
+            {
+                Log.Debug("Stopped: " + Name);
+            }
+            else
+            {
+                Log.Error("Failed to stop: " + Name);
+            }
         }
 
         protected abstract void Produce(object sender, DoWorkEventArgs e);
