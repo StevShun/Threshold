@@ -36,13 +36,13 @@ namespace threshold.Events.Conduit
 
         public void AddEventListener(IEventListener eventListener)
         {
-            Log.Debug("Added event listner");
+            Log.Debug("Added event listener " + eventListener.ToString());
             Actions.Add(new AddListenerAction(eventListener));
         }
 
         public void RemoveEventListener(IEventListener eventListener)
         {
-            Log.Debug("Removed event listner");
+            Log.Debug("Removed event listener " + eventListener.ToString());
             Actions.Add(new RemoveListenerAction(eventListener));
         }
 
