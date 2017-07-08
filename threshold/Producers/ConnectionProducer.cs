@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
-using log4net;
+using System.Threading;
 using threshold.Connections;
 using threshold.Events.Conduit;
 using threshold.Events.Types;
@@ -10,7 +10,6 @@ namespace threshold.Producers
 {
     public class ConnectionProducer : BaseProducer<IConnection>
     {
-        private static readonly ILog Log = LogManager.GetLogger(typeof(ConnectionProducer));
         private IEventConduit EventConduit;
 
         public ConnectionProducer(IEventConduit eventConduit)
@@ -23,14 +22,6 @@ namespace threshold.Producers
             get
             {
                 return "Connection Producer";
-            }
-        }
-
-        public override int ProduceIntervalMillis
-        {
-            get
-            {
-                return 0;
             }
         }
 
@@ -47,11 +38,17 @@ namespace threshold.Producers
                     }
                     else
                     {
-                        // string info = connection.OwnerExecutablePath + " PID: " + connection.OwnerPid;
-                        // Log.Debug("New connection: " + info);
                         ConnectionEvent connectionEvent = new ConnectionEvent(connection);
                         EventConduit.SendEvent(connectionEvent);
                     }
+                }
+                if (BackgroundThread.CancellationPending)
+                {
+                    break;
+                }
+                else
+                {
+                    Thread.Sleep(1000);
                 }
             }
             e.Cancel = true;

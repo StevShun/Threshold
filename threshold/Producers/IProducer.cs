@@ -6,8 +6,6 @@ namespace threshold.Producers
     {
         string Name { get; }
 
-        int ProduceIntervalMillis { get; }
-
         void Start();
 
         void Stop();

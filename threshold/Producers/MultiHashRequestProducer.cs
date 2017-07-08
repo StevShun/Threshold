@@ -31,14 +31,6 @@ namespace threshold.Producers
             }
         }
 
-        public override int ProduceIntervalMillis
-        {
-            get
-            {
-                return 5000;
-            }
-        }
-
         public override List<EventType> GetNotifyTypes()
         {
             List<EventType> eventTypes = new List<EventType>();
@@ -91,8 +83,6 @@ namespace threshold.Producers
 
                     EventConduit.SendEvent(multiHashRequestEvent);
                 }
-
-                Thread.Sleep(ProduceIntervalMillis);
             }
             e.Cancel = true;
         }

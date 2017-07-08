@@ -19,8 +19,6 @@ namespace threshold.Producers
 
         public abstract string Name { get; }
 
-        public abstract int ProduceIntervalMillis { get; }
-
         public void Start()
         {
             BackgroundThread.DoWork += Produce;

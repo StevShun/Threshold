@@ -27,19 +27,11 @@ namespace threshold.Producers
             }
         }
 
-        public override int ProduceIntervalMillis
-        {
-            get
-            {
-                return 0;
-            }
-        }
-
         protected override void Produce(object sender, DoWorkEventArgs e)
         {
             while (!BackgroundThread.CancellationPending)
             {
-                Thread.Sleep(500);
+                Thread.Sleep(1000);
             }
             e.Cancel = true;
         }

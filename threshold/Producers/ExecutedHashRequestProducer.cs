@@ -28,15 +28,6 @@ namespace threshold.Producers
             }
         }
 
-        public override int ProduceIntervalMillis
-        {
-            get
-            {
-                // VirusTotal API request limit is 4 requests per minute.
-                return 15000;
-            }
-        }
-
         protected override void Produce(object sender, DoWorkEventArgs e)
         {
             while (!BackgroundThread.CancellationPending)
@@ -62,7 +53,9 @@ namespace threshold.Producers
                             "Failed to receive response from server. Request requeued.");
                     }
                 }
-                Thread.Sleep(ProduceIntervalMillis);
+                // VirusTotal API request limit is 4 requests per minute,
+                // which means we must wait at least 15 seconds.
+                Thread.Sleep(15000);
             }
             e.Cancel = true;
         }
