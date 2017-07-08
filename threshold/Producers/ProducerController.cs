@@ -18,18 +18,21 @@ namespace threshold.Producers
             EventConduit = eventConduit;
             ConnectionProducer = new ConnectionProducer(eventConduit);
             ApplicationProducer = new WindowsApplicationProducer(eventConduit);
+            RequestProducer = new MultiHashRequestProducer(eventConduit);
         }
 
         public void Start()
         {
             ConnectionProducer.Start();
             ApplicationProducer.Start();
+            RequestProducer.Start();
         }
 
         public void Stop()
         {
             ConnectionProducer.Stop();
             ApplicationProducer.Stop();
+            RequestProducer.Stop();
         }
     }
 }
