@@ -46,6 +46,7 @@ namespace threshold.Connections
                 {
                     temp = managementObject["ExecutablePath"] ?? "";
                 }
+                executablePath = temp.ToString();
                 if ("".Equals(executablePath))
                 {
                     try
