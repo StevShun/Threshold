@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.Threading;
 using threshold.Connections;
 using threshold.Events.Conduit;
 using threshold.Events.Types;
@@ -27,13 +26,15 @@ namespace threshold.Producers
 
         protected override void Produce(object sender, DoWorkEventArgs e)
         {
-            while (!BackgroundThread.CancellationPending)
+            Netstat.Daemon netstatDaemon = new Netstat.Daemon();
+            if (netstatDaemon.Start())
             {
-                foreach (IConnection connection in Netstat.SingleExecution.GetCurrentConnections())
+                while (!BackgroundThread.CancellationPending && !netstatDaemon.HasExited)
                 {
-                    if (BackgroundThread.CancellationPending)
+                    IConnection connection = netstatDaemon.TryGetConnection(1000);
+                    if (connection == null)
                     {
-                        break;
+                        continue;
                     }
                     else
                     {
@@ -41,15 +42,8 @@ namespace threshold.Producers
                         EventConduit.SendEvent(connectionEvent);
                     }
                 }
-                if (BackgroundThread.CancellationPending)
-                {
-                    break;
-                }
-                else
-                {
-                    Thread.Sleep(1000);
-                }
             }
+            netstatDaemon.Stop();
             e.Cancel = true;
         }
 

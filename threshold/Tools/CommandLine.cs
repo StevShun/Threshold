@@ -5,21 +5,23 @@ namespace threshold.Tools
 {
     public static class CommandLine
     {
-        public static List<string> ExecuteCommandWithArguments(string command, string arguments)
+        public static List<string> ExecuteCommandLineProcess(Process process)
         {
             // CLI code example sourced from: http://stackoverflow.com/a/206366
-            Process process = GetProcess(command, arguments);
-
             string output;
             try
             {
                 process.Start();
                 output = process.StandardOutput.ReadToEnd();
-                process.WaitForExit();
+                process.WaitForExit(5000);
             }
             catch
             {
                 output = "";
+            }
+            finally
+            {
+                process.Dispose();
             }
 
             return DataHelper.ToList(output);
