@@ -1,1 +1,4 @@
 * text=auto
+
+*.cs text
+*.sln text
