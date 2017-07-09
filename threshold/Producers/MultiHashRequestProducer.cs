@@ -111,9 +111,10 @@ namespace threshold.Producers
                         multiHashRequest.Build();
                         IEvent multiHashRequestEvent = new MultiHashRequestEvent(multiHashRequest);
                         EventConduit.SendEvent(multiHashRequestEvent);
-                        Thread.Sleep(1000);
                     }
                 }
+
+                Thread.Sleep(1000);
             }
             e.Cancel = true;
         }
