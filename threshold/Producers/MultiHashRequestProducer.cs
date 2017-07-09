@@ -89,7 +89,11 @@ namespace threshold.Producers
                             IApplication application;
                             if (PendingApplications.TryDequeue(out application))
                             {
-                                if (!multiHashRequest.AddApplication(application))
+                                if (multiHashRequest.AddApplication(application))
+                                {
+                                    Log.Info("Added '" + application.Name + "' to the request");
+                                }
+                                else
                                 {
                                     Log.Debug("Requeued application because the request is full: "
                                         + application.Name);
