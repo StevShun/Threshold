@@ -13,12 +13,7 @@ namespace threshold.Tools
         public List<string> ExecuteCommandWithArguments(string command, string arguments)
         {
             // CLI code example sourced from: http://stackoverflow.com/a/206366
-            Process process = new Process();
-            process.StartInfo.FileName = command;
-            process.StartInfo.Arguments = arguments;
-            process.StartInfo.CreateNoWindow = true;
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.RedirectStandardOutput = true;
+            Process process = GetProcess(command, arguments);
 
             string output;
             try
@@ -33,6 +28,17 @@ namespace threshold.Tools
             }
 
             return DataHelper.ToList(output);
+        }
+
+        private Process GetProcess(string command, string arguments)
+        {
+            Process process = new Process();
+            process.StartInfo.FileName = command;
+            process.StartInfo.Arguments = arguments;
+            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            return process;
         }
     }
 }

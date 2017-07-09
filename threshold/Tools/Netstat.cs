@@ -7,47 +7,46 @@ using threshold.Connections;
 
 namespace threshold.Tools
 {
-    public class Netstat
+    public static class Netstat
     {
-        public Netstat()
+        public static class SingleExecution
         {
-        }
-
-        public ConcurrentBag<IConnection> GetConnections()
-        {
-            ConcurrentBag<IConnection> connections = new ConcurrentBag<IConnection>();
-            CommandLine commandLine = new CommandLine();
-            List<string> rawOutput = commandLine.ExecuteCommandWithArguments("netstat", "-ano");
-            // Remove the header that Netstat adds to its output.
-            rawOutput.RemoveRange(0, 4);
-
-            Parallel.ForEach(rawOutput, (line) =>
+            public static ConcurrentBag<IConnection> GetCurrentUniqueConnections()
             {
-                Line netstatLine = new Line(line);
-                Connection connection = new Connection
+                ConcurrentBag<IConnection> connections = GetCurrentConnections();
+
+                return new ConcurrentBag<IConnection>(connections.GroupBy(x => x.OwnerPid).Select(x => x.First()));
+            }
+
+            public static ConcurrentBag<IConnection> GetCurrentConnections()
+            {
+                ConcurrentBag<IConnection> connections = new ConcurrentBag<IConnection>();
+                CommandLine commandLine = new CommandLine();
+                List<string> rawOutput = commandLine.ExecuteCommandWithArguments("netstat", "-ano");
+                // Remove the header that Netstat adds to its output.
+                rawOutput.RemoveRange(0, 4);
+
+                Parallel.ForEach(rawOutput, (line) =>
                 {
-                    ExternalAddress = netstatLine.ForeignAddress,
-                    ExternalPort = netstatLine.ForeignPort,
-                    LocalAddress = netstatLine.LocalAddress,
-                    LocalPort = netstatLine.LocalPort,
-                    OwnerPid = netstatLine.Pid,
-                    Protocol = netstatLine.Proto,
-                    State = netstatLine.State
-                };
-                connections.Add(connection);
-            });
+                    Line netstatLine = new Line(line);
+                    Connection connection = new Connection
+                    {
+                        ExternalAddress = netstatLine.ForeignAddress,
+                        ExternalPort = netstatLine.ForeignPort,
+                        LocalAddress = netstatLine.LocalAddress,
+                        LocalPort = netstatLine.LocalPort,
+                        OwnerPid = netstatLine.Pid,
+                        Protocol = netstatLine.Proto,
+                        State = netstatLine.State
+                    };
+                    connections.Add(connection);
+                });
 
-            return connections;
+                return connections;
+            }
         }
 
-        public ConcurrentBag<IConnection> GetUniqueConnections()
-        {
-            ConcurrentBag<IConnection> connections = GetConnections();
-
-            return new ConcurrentBag<IConnection>(connections.GroupBy(x => x.OwnerPid).Select(x => x.First()));
-        }
-
-        class Line
+        protected class Line
         {
             private string[] LineSubStrings;
 

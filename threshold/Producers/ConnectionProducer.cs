@@ -27,10 +27,9 @@ namespace threshold.Producers
 
         protected override void Produce(object sender, DoWorkEventArgs e)
         {
-            Netstat netstat = new Netstat();
             while (!BackgroundThread.CancellationPending)
             {
-                foreach (IConnection connection in netstat.GetConnections())
+                foreach (IConnection connection in Netstat.SingleExecution.GetCurrentConnections())
                 {
                     if (BackgroundThread.CancellationPending)
                     {
