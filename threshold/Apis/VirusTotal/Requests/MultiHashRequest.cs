@@ -23,6 +23,7 @@ namespace threshold.Apis.VirusTotal.Requests
             if (HashesToApplications.Count <= 25
                 && !HashesToApplications.ContainsKey(application.Md5Hash))
             {
+                isAdded = true;
                 HashesToApplications.Add(application.Md5Hash, application);
             }
 
