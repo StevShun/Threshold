@@ -21,8 +21,7 @@ namespace threshold.Tools
             public static ConcurrentBag<IConnection> GetCurrentConnections()
             {
                 ConcurrentBag<IConnection> connections = new ConcurrentBag<IConnection>();
-                CommandLine commandLine = new CommandLine();
-                List<string> rawOutput = commandLine.ExecuteCommandWithArguments("netstat", "-ano");
+                List<string> rawOutput = CommandLine.ExecuteCommandWithArguments("netstat", "-ano");
                 // Remove the header that Netstat adds to its output.
                 rawOutput.RemoveRange(0, 4);
 
