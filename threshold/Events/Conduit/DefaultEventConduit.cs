@@ -54,11 +54,6 @@ namespace threshold.Events.Conduit
                 Log.Debug("Sending event: " + eventType.ToString());
                 Actions.Add(new OfferEventAction(_event));
             }
-            else
-            {
-                Log.Warn("Failed to send event " + eventType.ToString()
-                    + " because the conduit thread is not running");
-            }
         }
 
         public void Start()
