@@ -10,6 +10,21 @@
             }
         }
 
+        public static bool IsApiKeyValid
+        {
+            get
+            {
+                if (ApiKey.Length == 0)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+        }
+
         public static MultiHashRequest GetMultiHashRequest()
         {
             return new MultiHashRequest(ApiKey);

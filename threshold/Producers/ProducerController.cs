@@ -19,6 +19,7 @@ namespace threshold.Producers
             ConnectionProducer = new ConnectionProducer(eventConduit);
             ApplicationProducer = new WindowsApplicationProducer(eventConduit);
             RequestProducer = new MultiHashRequestProducer(eventConduit);
+            ResultProducer = new ExecutedHashRequestProducer(eventConduit);
         }
 
         public void Start()
@@ -26,6 +27,7 @@ namespace threshold.Producers
             ConnectionProducer.Start();
             ApplicationProducer.Start();
             RequestProducer.Start();
+            ResultProducer.Start();
         }
 
         public void Stop()
@@ -33,6 +35,7 @@ namespace threshold.Producers
             ConnectionProducer.Stop();
             ApplicationProducer.Stop();
             RequestProducer.Stop();
+            ResultProducer.Stop();
         }
     }
 }
