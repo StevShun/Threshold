@@ -57,6 +57,8 @@ namespace threshold.Tools
             private BackgroundWorker _BackgroundWorker;
             private Process NetstatProcess;
             private BlockingCollection<IConnection> Connections;
+            private ISet<IConnection> ProducedConnections;
+            private IDictionary<IConnection, bool> ConnectionsToExportStatus;
 
             public Daemon()
             {
@@ -65,14 +67,17 @@ namespace threshold.Tools
                     WorkerReportsProgress = true,
                     WorkerSupportsCancellation = true
                 };
-                NetstatProcess = CommandLine.GetProcess("netstat", "-ao");
-                Connections = new BlockingCollection<IConnection>();
+                // Use netstat with "-ano 1" (all connections and ports in,
+                // numerical format with no DNS lookup, include owner PID, and,
+                // rerun every second.
+                NetstatProcess = CommandLine.GetProcess("netstat", "-ano 1");
+                ConnectionsToExportStatus = new ConcurrentDictionary<IConnection, bool>();
             }
 
             public bool Start()
             {
                 bool isStarted = false;
-
+                Log.Info("Starting netstat process...");
                 try
                 {
                     isStarted = NetstatProcess.Start();
@@ -97,7 +102,7 @@ namespace threshold.Tools
                 }
                 catch
                 {
-                    Log.Error("Failed to acquire output stream for Netstat daemon process");
+                    Log.Error("Failed to acquire output stream for netstat process");
                     e.Cancel = true;
                     return;
                 }
@@ -122,12 +127,16 @@ namespace threshold.Tools
                                 Protocol = netstatLine.Proto,
                                 State = netstatLine.State
                             };
-                            Connections.Add(connection);
+                            if (!ConnectionsToExportStatus.ContainsKey(connection))
+                            {
+                                Log.Info("Adding connection...");
+                                ConnectionsToExportStatus.Add(connection, false);
+                            }
                         }
                     }
                 }
 
-                if (NetstatProcess.HasExited)
+                if (NetstatProcess.HasExited && !_BackgroundWorker.CancellationPending)
                 {
                     Log.Warn("Netstat process has exited unexpectedly while " +
                         "processing standard output");
@@ -143,11 +152,12 @@ namespace threshold.Tools
             public bool Stop()
             {
                 bool isStopped = false;
-
+                Log.Info("Stopping netstat process...");
                 try
                 {
                     _BackgroundWorker.CancelAsync();
                     isStopped = NetstatProcess.WaitForExit(5000);
+                    Log.Info("Stopped the netstat process");
                 }
                 catch
                 {
@@ -180,6 +190,18 @@ namespace threshold.Tools
                 {
                     return null;
                 }
+            }
+
+            public IConnection TryGetConnection()
+            {
+                foreach (KeyValuePair<IConnection, bool> keyValuePair in ConnectionsToExportStatus)
+                {
+                    if (!keyValuePair.Value) {
+                        ConnectionsToExportStatus[keyValuePair.Key] = true;
+                        return keyValuePair.Key;
+                    }
+                }
+                return null;
             }
         }
 

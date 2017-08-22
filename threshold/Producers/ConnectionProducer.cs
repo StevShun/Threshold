@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading;
 using threshold.Connections;
 using threshold.Events.Conduit;
 using threshold.Events.Types;
@@ -31,9 +32,10 @@ namespace threshold.Producers
             {
                 while (!BackgroundThread.CancellationPending && !netstatDaemon.HasExited)
                 {
-                    IConnection connection = netstatDaemon.TryGetConnection(1000);
+                    IConnection connection = netstatDaemon.TryGetConnection();
                     if (connection == null)
                     {
+                        Thread.Sleep(1000);
                         continue;
                     }
                     else
