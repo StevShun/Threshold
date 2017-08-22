@@ -45,7 +45,9 @@ namespace threshold.Connections
                 foreach (ManagementObject managementObject in managementObjectSearcher.Get())
                 {
                     temp = managementObject["ExecutablePath"] ?? "";
+                    managementObject.Dispose();
                 }
+                managementObjectSearcher.Dispose();
                 executablePath = temp.ToString();
                 if ("".Equals(executablePath))
                 {
@@ -61,6 +63,29 @@ namespace threshold.Connections
                 }
             }
             return executablePath;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var item = obj as Connection;
+
+            if (item == null)
+            {
+                return false;
+            }
+
+            return OwnerPid.Equals(item.OwnerPid)
+                && ExternalPort.Equals(item.ExternalPort)
+                && LocalPort.Equals(item.LocalPort)
+                && ExternalAddress.Equals(item.ExternalAddress)
+                && LocalAddress.Equals(item.LocalAddress)
+                && Protocol.Equals(item.Protocol)
+                && State.Equals(item.State);
+        }
+
+        public override int GetHashCode()
+        {
+            return OwnerPid;
         }
     }
 }
