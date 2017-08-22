@@ -59,7 +59,7 @@ namespace threshold.Applications
             {
                 if (_Md5Hash == null)
                 {
-                    _Md5Hash = DataHelper.GetMd5Hash(ExecutablePath);
+                    _Md5Hash = DataHelper.GetFileMd5Hash(ExecutablePath);
                 }
                 return _Md5Hash;
             }

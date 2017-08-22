@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace threshold.Tools
 {
@@ -56,9 +57,9 @@ namespace threshold.Tools
             return list;
         }
 
-        public static string GetMd5Hash(string filePath)
+        public static string GetFileMd5Hash(string filePath)
         {
-            string md5Hash;
+            string md5Hash = "";
 
             if (File.Exists(filePath))
             {
@@ -66,13 +67,12 @@ namespace threshold.Tools
                 // http://stackoverflow.com/a/10520086
                 try
                 {
-                    using (var md5 = MD5.Create())
+                    using (MD5 md5 = MD5.Create())
                     {
-                        using (var stream = File.OpenRead(filePath))
+                        using (FileStream stream = File.OpenRead(filePath))
                         {
                             md5Hash = BitConverter.ToString(
-                                md5.ComputeHash(stream)
-                                ).Replace("-", "").ToLower();
+                                md5.ComputeHash(stream)).Replace("-", "").ToLower();
                         }
                     }
                 }
@@ -80,10 +80,6 @@ namespace threshold.Tools
                 {
                     md5Hash = "";
                 }
-            }
-            else
-            {
-                md5Hash = "";
             }
 
             return md5Hash;
