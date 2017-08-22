@@ -47,10 +47,13 @@ namespace threshold.Producers
             {
                 case EventType.WindowsApplication:
                     WindowsApplicationEvent windowsApplicationEvent = (WindowsApplicationEvent)_event;
+
                     string info = "'" + windowsApplicationEvent.Application.Name
                         + "', PID '" + windowsApplicationEvent.Application.Pid + "', hash '"
                         + windowsApplicationEvent.Application.Md5Hash + "'";
+
                     Log.Info("Got application: " + info);
+
                     if (windowsApplicationEvent.Application.IsSystemOwned)
                     {
                         Log.Info("Application " + info + " will not be scanned because it is system owned");
@@ -74,58 +77,58 @@ namespace threshold.Producers
         {
             while (!BackgroundThread.CancellationPending)
             {
-                if (RequestFactory.IsApiKeyValid)
+                Thread.Sleep(1000);
+
+                if (!RequestFactory.IsApiKeyValid)
                 {
-                    if (!PendingApplications.IsEmpty)
+                    Log.Error("VirusTotal API key is invalid. Please set the API key");
+                    Thread.Sleep(5000);
+                    continue;
+                }
+
+                if (!PendingApplications.IsEmpty)
+                {
+                    MultiHashRequest multiHashRequest = RequestFactory.GetMultiHashRequest();
+
+                    foreach (var item in PendingApplications)
                     {
-                        MultiHashRequest multiHashRequest = RequestFactory.GetMultiHashRequest();
-
-                        foreach (var item in PendingApplications)
-                        {
-                            if (BackgroundThread.CancellationPending)
-                            {
-                                break;
-                            }
-                            else
-                            {
-                                IApplication application;
-                                if (PendingApplications.TryDequeue(out application))
-                                {
-                                    if (multiHashRequest.AddApplication(application))
-                                    {
-                                        Log.Info("Added '" + application.Name + "' to the request");
-                                    }
-                                    else
-                                    {
-                                        Log.Debug("Requeued application because the request is full: "
-                                            + application.Name);
-                                        // Requeue the application if the hash request is full.
-                                        PendingApplications.Enqueue(application);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
                         if (BackgroundThread.CancellationPending)
                         {
                             break;
                         }
                         else
                         {
-                            Log.Info("Building multi hash request...");
-                            multiHashRequest.Build();
-                            IEvent multiHashRequestEvent = new MultiHashRequestEvent(multiHashRequest);
-                            EventConduit.SendEvent(multiHashRequestEvent);
+                            IApplication application;
+                            if (PendingApplications.TryDequeue(out application))
+                            {
+                                if (multiHashRequest.AddApplication(application))
+                                {
+                                    Log.Info("Added '" + application.Name + "' to the request");
+                                }
+                                else
+                                {
+                                    Log.Debug("Requeued application because the request is full: "
+                                        + application.Name);
+                                    // Requeue the application if the hash request is full.
+                                    PendingApplications.Enqueue(application);
+                                    break;
+                                }
+                            }
                         }
                     }
-                }
-                else
-                {
-                    Log.Error("VirusTotal API key is invalid. Please set the API key");
-                }
 
-                Thread.Sleep(1000);
+                    if (BackgroundThread.CancellationPending)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Log.Info("Building multi hash request...");
+                        multiHashRequest.Build();
+                        IEvent multiHashRequestEvent = new MultiHashRequestEvent(multiHashRequest);
+                        EventConduit.SendEvent(multiHashRequestEvent);
+                    }
+                }
             }
             e.Cancel = true;
         }
