@@ -6,12 +6,14 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using threshold.Applications;
+using log4net;
 
 namespace threshold.Apis.VirusTotal.Requests
 {
     public abstract class BaseRequest : IRequest
     {
-        protected readonly string BaseUrl = "http://www.virustotal.com";
+        private static readonly ILog Log = LogManager.GetLogger(typeof(BaseRequest));
+        protected const string BaseUrl = "http://www.virustotal.com";
 
         public bool ReceivedResponseFromServer { get; set; } = false;
 
@@ -36,7 +38,7 @@ namespace threshold.Apis.VirusTotal.Requests
             }
             catch (Exception e) when (e is ArgumentNullException || e is WebException)
             {
-                System.Diagnostics.Debug.WriteLine(e);
+                Log.Error("Failed to process response from server", e);
             }
         }
 
@@ -50,13 +52,14 @@ namespace threshold.Apis.VirusTotal.Requests
 
             if (RawServerResponse != null)
             {
+                Log.Debug("About to parse: " + RawServerResponse);
                 try
                 {
                     jsonArry = JArray.Parse(RawServerResponse);
                 }
                 catch (JsonReaderException e)
                 {
-                    System.Diagnostics.Debug.WriteLine(e);
+                    Log.Error("Failed to parse request response", e);
                 }
             }
 
@@ -75,7 +78,7 @@ namespace threshold.Apis.VirusTotal.Requests
                 }
                 catch (JsonReaderException e)
                 {
-                    System.Diagnostics.Debug.WriteLine(e);
+                    Log.Error("Failed to parse request response", e);
                 }
             }
 
