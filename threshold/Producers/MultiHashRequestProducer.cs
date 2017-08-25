@@ -52,8 +52,6 @@ namespace threshold.Producers
                         + "', PID '" + windowsApplicationEvent.Application.Pid + "', hash '"
                         + windowsApplicationEvent.Application.Md5Hash + "'";
 
-                    Log.Info("Got application: " + info);
-
                     if (windowsApplicationEvent.Application.IsSystemOwned)
                     {
                         Log.Info("Application " + info + " will not be scanned because it is system owned");

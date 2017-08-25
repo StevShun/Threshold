@@ -44,8 +44,6 @@ namespace threshold.Producers
                 case EventType.Connection:
                     ConnectionEvent connectionEvent = (ConnectionEvent)_event;
                     IApplication application = new WindowsApplication(connectionEvent.Connection);
-                    Log.Info("Sending application: '" + application.Name + "' with hash: '"
-                        + application.Md5Hash + "'");
                     EventConduit.SendEvent(new WindowsApplicationEvent(application));
                     break;
             }
