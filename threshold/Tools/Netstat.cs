@@ -56,8 +56,6 @@ namespace threshold.Tools
             private static readonly ILog Log = LogManager.GetLogger(typeof(Daemon));
             private BackgroundWorker _BackgroundWorker;
             private Process NetstatProcess;
-            private BlockingCollection<IConnection> Connections;
-            private ISet<IConnection> ProducedConnections;
             private IDictionary<IConnection, bool> ConnectionsToExportStatus;
 
             public Daemon()
@@ -176,19 +174,6 @@ namespace threshold.Tools
                 get
                 {
                     return NetstatProcess.HasExited;
-                }
-            }
-
-            public IConnection TryGetConnection(int timeoutMillis)
-            {
-                IConnection connection;
-                if (Connections.TryTake(out connection, timeoutMillis))
-                {
-                    return connection;
-                }
-                else
-                {
-                    return null;
                 }
             }
 
