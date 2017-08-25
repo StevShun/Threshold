@@ -5,6 +5,7 @@ namespace threshold.Applications
 {
     public class WindowsApplication : IApplication
     {
+        private const string UnknownApplication = "Unknown";
         private IConnection _Connection;
         private string _Md5Hash;
         private string _Name;
@@ -74,7 +75,7 @@ namespace threshold.Applications
                     string executablePath = _Connection.OwnerExecutablePath;
                     if ("".Equals(executablePath))
                     {
-                        _Name = "Unknown";
+                        _Name = UnknownApplication;
                     }
                     else
                     {
@@ -83,6 +84,35 @@ namespace threshold.Applications
                 }
                 return _Name;
             }
+        }
+
+        public override bool Equals(object obj)
+        {
+            var item = obj as WindowsApplication;
+
+            if (item == null)
+            {
+                return false;
+            }
+
+            if (Name.Equals(UnknownApplication) && item.Name.Equals(UnknownApplication))
+            {
+                if (Pid.Equals(item.Pid))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            return Md5Hash.Equals(item.Md5Hash);
+        }
+
+        public override int GetHashCode()
+        {
+            return Pid;
         }
     }
 }
