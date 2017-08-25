@@ -1,86 +1,87 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows.Forms;
+using System.Collections.Concurrent;
 using threshold.Views.Forms;
 using threshold.Applications;
+using threshold.Apis.VirusTotal.Requests;
 using threshold.Connections;
+using threshold.Events.Conduit;
+using threshold.Events.Types;
 
 namespace threshold
 {
-    public partial class MainForm : Form
+    public partial class MainForm : Form, IEventListener
     {
-        public MainForm()
+        private IEventConduit EventConduit;
+        private BackgroundWorker _BackgroundWorker;
+        private BlockingCollection<IRequest> ExecutedRequests;
+        private TreeNode Parent;
+
+        public MainForm(IEventConduit eventConduit)
         {
             InitializeComponent();
+            ExecutedRequests = new BlockingCollection<IRequest>();
+            applicationsTreeView.BeginUpdate();
+            Parent = applicationsTreeView.Nodes.Add("Applications");
+            applicationsTreeView.EndUpdate();
+            EventConduit = eventConduit;
+            EventConduit.AddEventListener(this);
+            _BackgroundWorker = new BackgroundWorker
+            {
+                WorkerReportsProgress = true,
+                WorkerSupportsCancellation = true
+            };
+            _BackgroundWorker.DoWork += AddEventsToUserInterface;
+            _BackgroundWorker.RunWorkerAsync();
+        }
+
+        private void AddEventsToUserInterface(object sender, DoWorkEventArgs e)
+        {
+            while (!_BackgroundWorker.CancellationPending)
+            {
+                IRequest request = null;
+                if (ExecutedRequests.TryTake(out request, 1000))
+                {
+                    foreach (KeyValuePair<IApplication, Dictionary<string, string>> keyValuePair in request.GetResults())
+                    {
+                        IApplication application = keyValuePair.Key;
+                        String value = application.Name + " - " + application.ExecutablePath;
+                        if (IsHandleCreated)
+                        {
+                            //applicationsTreeView.BeginUpdate();
+                            applicationsTreeView.Invoke((MethodInvoker)(() => Parent.Nodes.Add(value)));
+                            //applicationsTreeView.EndUpdate();
+                        }
+                    }
+                }
+            }
+        }
+
+        public void OnEvent(IEvent _event)
+        {
+            EventType eventType = _event.GetEventType();
+            switch (eventType)
+            {
+                case EventType.ExecutedMultiHashRequest:
+                    ExecutedMultiHashRequestEvent executedMultiHashRequestEvent = (ExecutedMultiHashRequestEvent)_event;
+                    ExecutedRequests.Add(executedMultiHashRequestEvent.Request);
+                    break;
+            }
+        }
+
+        public List<EventType> GetNotifyTypes()
+        {
+            List<EventType> eventTypes = new List<EventType>();
+            eventTypes.Add(EventType.ExecutedMultiHashRequest);
+            return eventTypes;
         }
 
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SettingsForm settingsForm = new SettingsForm();
             settingsForm.Show();
-        }
-
-        private void getActiveConnectionsButton_Click(object sender, EventArgs e)
-        {
-            consoleOutputTextBox.Clear();
-            consoleOutputTextBox.AppendText("");
-        }
-
-        private string getActiveConnectionsText(Dictionary<string, IConnection> connections)
-        {
-            string activeConnectionsContent = "";
-
-            foreach (Connection conn in connections.Values)
-            {
-                IApplication application = new WindowsApplication(conn);
-                activeConnectionsContent = activeConnectionsContent
-                    + "Connection info:"
-                    + Environment.NewLine
-                    + "Local Address: " + conn.LocalAddress
-                    + " | Local Port: " + conn.LocalPort.ToString()
-                    + " | External Address: " + conn.ExternalAddress
-                    + " | External Port: " + conn.ExternalPort.ToString()
-                    + " | Proto: " + conn.Protocol
-                    + " | Process: " + conn.OwnerPid
-                    + " | State: " + conn.State
-                    + Environment.NewLine
-                    + "Application info:"
-                    + Environment.NewLine
-                    + "Name: " + application.Name
-                    + " | Location: " + application.ExecutablePath
-                    + " | Hash: " + application.Md5Hash
-                    + Environment.NewLine
-                    + "#########################################################"
-                    + Environment.NewLine;
-            }
-
-            return activeConnectionsContent;
-        }
-
-        private string getActiveWindowsApplicationsText(Dictionary<string, IApplication> applications)
-        {
-            string applicationsText = "";
-
-            foreach (IApplication app in applications.Values)
-            {
-                applicationsText = applicationsText
-                    + "Aoo info:"
-                    + Environment.NewLine
-                    + "PID: " + app.Pid
-                    + " | Name: " + app.Name
-                    + " | Executable path: " + app.ExecutablePath
-                    + " | MD5 Hash: " + app.Md5Hash
-                    + Environment.NewLine
-                    + "#########################################################"
-                    + Environment.NewLine;
-            }
-
-            return applicationsText;
-        }
-
-        private void checkHashButton_Click(object sender, EventArgs e)
-        {
-            return;
         }
     }
 }
